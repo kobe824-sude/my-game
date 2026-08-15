@@ -1,0 +1,1108 @@
+
+
+
+body{
+
+margin:0;
+
+overflow:hidden;
+
+background:#6ca35a;
+
+font-family:Arial;
+
+}
+
+
+
+#start{
+
+position:absolute;
+
+inset:0;
+
+background:#222;
+
+color:white;
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+align-items:center;
+
+z-index:10;
+
+}
+
+
+
+button{
+
+font-size:28px;
+
+padding:15px 40px;
+
+cursor:pointer;
+
+}
+
+
+
+#game{
+
+display:none;
+
+position:relative;
+
+width:100vw;
+
+height:100vh;
+
+overflow:hidden;
+
+}
+
+
+
+#frog{
+
+position:absolute;
+
+width:220px;
+
+height:220px;
+
+bottom:80px;
+
+object-fit:contain;
+
+}
+
+
+
+#enemy{
+position:absolute;
+width:120px;
+height:120px;
+background-image:url('../assets/players/miaocuijiao_cat/sprites/miaocat_idle.png');
+background-repeat:no-repeat;
+background-position:center bottom;
+background-size:contain;
+background-color:transparent;
+border-radius:0;
+bottom:80px;
+z-index:20;
+}
+
+
+
+#wave{
+
+position:absolute;
+
+width:45px;
+
+height:45px;
+
+background:#00bfff;
+
+border-radius:50%;
+
+box-shadow:
+
+0 0 15px #00ffff,
+
+0 0 30px #0088ff;
+
+display:none;
+
+}
+
+
+
+/* 血条 */
+
+#hpBox{
+
+position:absolute;
+
+}
+
+
+
+#hpBar{
+
+width:100px;
+
+height:12px;
+
+background:#333;
+
+border:2px solid white;
+
+}
+
+
+
+#hpFill{
+
+height:100%;
+
+width:100%;
+
+background:#00ff00;
+
+}
+
+
+
+#hpText{
+
+color:white;
+
+font-size:14px;
+
+text-align:center;
+
+}
+
+
+
+#info{
+
+position:absolute;
+
+top:20px;
+
+left:20px;
+
+background:#000c;
+
+color:white;
+
+padding:15px;
+
+border-radius:10px;
+
+font-size:18px;
+
+}
+
+
+
+#gameOverBox{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:48px;color:white;text-align:center;text-shadow:3px 3px 5px black;z-index:99;}#gameOverBox span{font-size:32px;}
+
+
+/* V8.8.7 frog HP bar (最终版本) */
+#frogHpBox{
+ position:absolute;
+ width:70px;
+ height:18px;
+ z-index:20;
+ text-align:center;
+ font-size:12px;
+ color:white;
+ pointer-events:none;
+}
+#frogHpFill{
+ position:absolute;
+ left:0;
+ top:0;
+ height:6px;
+ width:100%;
+ background:#00ff00;
+ border:1px solid #222;
+}
+#frogHpText{
+ position:absolute;
+ top:7px;
+ left:0;
+ width:70px;
+ font-weight:bold;
+ text-shadow:1px 1px 2px #000;
+}
+
+
+/* #player 最终合并版本 */
+#player{
+    position:absolute;
+    width:100px;
+    height:100px;
+    object-fit:contain;
+    background:none !important;
+    border:none !important;
+    bottom:80px;
+    left:180px;
+    z-index:10;
+    image-rendering:auto;
+}
+
+/* MiaoCat Player Replace */
+.miaocat-player-sprite {
+  position: absolute;
+  object-fit: contain;
+  image-rendering: auto;
+  pointer-events: none;
+  user-select: none;
+  z-index: 20;
+}
+
+/* V1.0.1 cleanup: remove duplicate test MiaoCat layer */
+#enemy{display:none !important;}
+
+#victoryBox{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:48px;color:#ffd700;text-align:center;z-index:999;font-weight:bold;}#victoryBox span{font-size:32px;}
+
+.cat-bullet{
+ position:absolute;
+ width:48px;
+ height:48px;
+ object-fit:contain;
+ z-index:40;
+ pointer-events:none;
+}
+
+/* V1.3 cartoon UI */
+#v13ui{position:absolute;inset:0;pointer-events:none;z-index:100;font-family:Arial;}
+#playerCard{position:absolute;top:20px;left:20px;background:#fff4c7;border:4px solid #d9902f;border-radius:18px;padding:12px;color:#6b3d00;font-size:18px;box-shadow:0 5px 15px #0005;}
+#playerHpFill{height:12px;width:100%;background:#67d64b;border-radius:8px;}
+#playerCard .bar{width:160px;background:#ddd;border-radius:8px;overflow:hidden;margin:5px 0;}
+#skillBar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+.skill{background:#fff4c7;border:3px solid #d9902f;border-radius:16px;width:90px;height:65px;text-align:center;padding-top:8px;color:#6b3d00;font-weight:bold;}
+.lock{opacity:.6;}
+
+
+/* V1.3.1 卡通HUD精修 */
+#v13ui{position:absolute;inset:0;pointer-events:none;z-index:200;font-family:Arial,sans-serif;}
+#playerCard{position:absolute;top:18px;left:18px;background:rgba(255,248,220,.92);border:4px solid #e8a82d;border-radius:22px;padding:14px 18px;color:#5b3512;font-size:22px;font-weight:bold;box-shadow:0 5px 15px #0005;}
+#playerHpText{font-size:16px;margin-top:6px;}
+.bar{width:220px;height:18px;background:#55351d;border-radius:12px;overflow:hidden;border:2px solid #fff;}
+#playerHpFill{height:100%;background:linear-gradient(90deg,#ffcf32,#ff7b28);transition:width .25s;}
+#cornText{margin-top:8px;font-size:26px;}
+#skillBar{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:12px;}
+.skill{width:82px;height:82px;background:rgba(255,248,220,.95);border:4px solid #d89a28;border-radius:20px;text-align:center;padding-top:8px;color:#5b3512;font-weight:bold;box-shadow:0 5px 12px #0005;font-size:16px;}
+.skill span{font-size:18px;color:#157c2b;}
+.skill.lock{opacity:.7;color:#777;}
+
+/* V1.3.2 HUD */
+#playerHUD{position:absolute;top:20px;left:20px}
+#frogHUD{position:absolute;top:20px;right:20px}
+.hud{background:#fff6d8;border:4px solid #d9902f;border-radius:22px;padding:12px 18px;color:#603400;box-shadow:0 6px 16px #0005;font-weight:bold;min-width:190px}
+.hud .title{font-size:22px;margin-bottom:5px}
+.hudBar{height:18px;background:#5b3b20;border-radius:12px;overflow:hidden;border:2px solid white;width:220px}
+#playerHpFill,#frogHudFill{height:100%;background:linear-gradient(90deg,#ffd43b,#ff7b25);transition:width .35s ease}
+#frogHudFill{background:linear-gradient(90deg,#5ee35e,#22aa22)}
+#skillBar .skill{transition:.2s}
+#skillBar .skill:hover{transform:scale(1.05)}
+
+/* V1.3.2 TRUE HUD */
+#v13ui{font-family:Arial,sans-serif;pointer-events:none}
+.hud{position:fixed;top:20px;width:220px;padding:12px;background:rgba(255,245,210,.92);border:4px solid #d99b32;border-radius:20px;box-shadow:0 5px 0 rgba(0,0,0,.15);z-index:20}
+#playerHUD{left:20px} #frogHUD{right:20px}
+.title{font-size:20px;font-weight:bold}
+.hudBar{height:18px;background:#333;border-radius:10px;overflow:hidden;margin-top:6px}
+#playerHpFill,#frogHudFill{height:100%;width:100%;background:#55c84d;transition:width .25s}
+#cornText{font-size:24px;margin-top:8px}
+#skillBar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:20}
+.skill{position:relative;width:90px;height:90px;text-align:center;background:rgba(255,245,210,.95);border:4px solid #d99b32;border-radius:22px;font-weight:bold;padding-top:8px;overflow:hidden}
+.lock{opacity:.55}
+.coolCircle{position:absolute;inset:0;background:transparent;z-index:0;border-radius:18px}
+.skill>*{position:relative;z-index:1}
+
+#info{display:none !important;} #playerHpFill,#frogHudFill{transition:width .3s ease,background .3s ease;}
+
+/* V1.4 Steam Demo combat feedback */
+.combatText{position:absolute;font-size:26px;font-weight:bold;text-shadow:2px 2px 0 #000;animation:floatDamage .9s ease-out forwards;pointer-events:none;z-index:99}.combatText{ }
+@keyframes floatDamage{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-45px) scale(1.15);opacity:0}}
+
+
+/* V1.4.3 Combat Text */
+.combatText{
+    position:fixed;
+    z-index:99999;
+    pointer-events:none;
+    font-size:28px;
+    font-weight:900;
+    font-family:Arial, sans-serif;
+    text-shadow:3px 3px 0 #000;
+    opacity:1;
+    transition:transform 1s ease-out, opacity 1s ease-out;
+}
+.combatText.damage{
+    color:white;
+}
+.combatText.heal{
+    color:#36ff36;
+}
+
+/* ===================== V5.0 角色选择界面 ===================== */
+#select{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,#2b3a55 0%,#1b2434 100%);
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:30;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+#select h1{
+  font-size:40px;
+  margin:0 0 32px 0;
+  text-shadow:2px 2px 0 #000;
+  letter-spacing:2px;
+}
+.charCards{display:flex;gap:34px;margin-bottom:36px;}
+.charCard{
+  width:250px;
+  padding:22px 18px 18px;
+  background:rgba(255,255,255,.08);
+  border:4px solid rgba(255,255,255,.25);
+  border-radius:26px;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .18s, border-color .18s, background .18s;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+}
+.charCard:hover{transform:translateY(-6px);border-color:#ffd86b;background:rgba(255,255,255,.14);}
+.charCard.selected{border-color:#ffd86b;background:rgba(255,216,107,.16);box-shadow:0 0 26px rgba(255,216,107,.45);}
+.charCard img{width:170px;height:170px;object-fit:contain;pointer-events:none;}
+.charName{font-size:28px;font-weight:bold;margin:12px 0 6px;}
+.charDesc{font-size:15px;color:#ccd6ea;margin-bottom:8px;}
+.charSkills{font-size:13px;color:#9fb4d8;}
+#startBtn{
+  font-size:26px;
+  padding:14px 64px;
+  border:none;
+  border-radius:16px;
+  background:#ffd86b;
+  color:#3a2a1a;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 6px 0 rgba(0,0,0,.35);
+  transition:.15s;
+}
+#startBtn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+#startBtn:not(:disabled):hover{transform:translateY(-2px);}
+
+/* ===================== V5.0 刀盾狗 UI ===================== */
+.dogBlade{image-rendering:auto;}
+#dogShieldImg{image-rendering:auto;}
+
+
+/* ===================== V5.0 刀盾狗 普攻刀光特效（从正前方劈下） ===================== */
+.dogSlashFx{
+  position:absolute;
+  width:200px;
+  height:200px;
+  pointer-events:none;
+  z-index:60;
+  border-radius:50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg 55deg,
+    rgba(224,234,248,0) 58deg,
+    rgba(224,234,248,.95) 66deg,
+    rgba(255,255,255,1) 90deg,
+    rgba(224,234,248,.95) 114deg,
+    rgba(224,234,248,0) 122deg,
+    transparent 125deg 360deg);
+  filter: drop-shadow(0 0 8px rgba(190,215,255,.9));
+  opacity:0;
+  transform-origin: 0% 50%;
+  transition: transform .22s ease-out, opacity .22s ease-out;
+}
+.dogSlashFx.big{
+  width:260px;
+  height:260px;
+}
+/* 护盾光环（不遮挡角色） */
+.dogShieldRing{
+  position:absolute;
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  border:6px solid rgba(90,180,255,.85);
+  box-shadow:0 0 18px rgba(90,180,255,.65), inset 0 0 18px rgba(90,180,255,.35);
+  background:radial-gradient(circle, rgba(90,180,255,.18) 35%, transparent 68%);
+  pointer-events:none;
+  z-index:30;
+}
+/* 狂犬旋风：旋转刀光圈 */
+.dogWhirlFx{
+  position:absolute;
+  width:280px;
+  height:280px;
+  pointer-events:none;
+  z-index:44;
+  border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0deg 70deg, rgba(255,255,255,.4) 90deg, transparent 110deg 360deg);
+  filter:drop-shadow(0 0 10px rgba(200,220,255,.6));
+  animation:dogWhirlSpin .7s linear infinite;
+}
+@keyframes dogWhirlSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+/* Q 技能升级：中心能量闪光 */
+.dogQFlash{
+  position:absolute;
+  width:170px;
+  height:170px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(180,220,255,.6) 40%, transparent 70%);
+  pointer-events:none;
+  z-index:50;
+  opacity:0;
+  animation: dogQFlash .3s ease-out forwards;
+}
+@keyframes dogQFlash{
+  0%{opacity:0; transform:scale(.3);}
+  30%{opacity:1; transform:scale(1.15);}
+  100%{opacity:0; transform:scale(1.7);}
+}
+
+/* R 龙卷风特效（占位，待正式贴图 tornado.png 替换） */
+.dogTornadoFx{
+  position:absolute;
+  width:150px;
+  height:280px;
+  pointer-events:none;
+  z-index:46;
+  border-radius:50% 50% 40% 40% / 70% 70% 30% 30%;
+  background:conic-gradient(from 0deg,
+    rgba(210,228,245,.05) 0deg 40deg,
+    rgba(220,235,250,.65) 45deg 75deg,
+    rgba(210,228,245,.05) 80deg 120deg,
+    rgba(220,235,250,.6) 125deg 155deg,
+    rgba(210,228,245,.05) 160deg 200deg,
+    rgba(220,235,250,.65) 205deg 235deg,
+    rgba(210,228,245,.05) 240deg 280deg,
+    rgba(220,235,250,.6) 285deg 315deg,
+    rgba(210,228,245,.05) 320deg 360deg);
+  filter:drop-shadow(0 0 12px rgba(160,210,255,.7));
+  opacity:.95;
+  animation:dogTornadoSpin .45s linear infinite;
+  transform-origin:50% 90%;
+}
+@keyframes dogTornadoSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+/* 龙卷风贴图（正式素材）摆动 */
+.dogTornadoImg{
+  animation: dogTornadoSway .7s ease-in-out infinite alternate;
+}
+@keyframes dogTornadoSway{
+  from{ transform: translateX(-5px) rotate(-2deg); }
+  to{ transform: translateX(5px) rotate(2deg); }
+}
+
+/* 普攻刀光：紧贴狗子的小号刀光 */
+.dogSlashFx.melee{
+  width:170px;
+  height:170px;
+}
+
+/* ===================== V5.1 场景背景 ===================== */
+#game{
+  background: url('../assets/ui/bg_scene.png') center/cover no-repeat;
+}
+.scene-sun{ position:absolute; top:7%; right:12%; width:90px; height:90px; border-radius:50%; background:radial-gradient(circle, #fff2b0, #ffd34d); box-shadow:0 0 50px rgba(255,220,100,.8); z-index:0; pointer-events:none; }
+.scene-cloud{ position:absolute; background:#fff; border-radius:50px; opacity:.9; z-index:0; pointer-events:none; }
+.scene-cloud.c1{ top:11%; left:8%; width:150px; height:44px; box-shadow:34px 14px 0 4px #fff, -22px 10px 0 2px #fff; }
+.scene-cloud.c2{ top:24%; left:52%; width:120px; height:36px; box-shadow:26px 12px 0 3px #fff, -18px 8px 0 2px #fff; }
+.scene-hill{ position:absolute; bottom:48%; z-index:0; pointer-events:none; }
+.scene-hill.h1{ left:-8%; width:60%; height:130px; border-radius:50% 50% 0 0; background:#7fb36a; }
+.scene-hill.h2{ right:-8%; width:70%; height:170px; border-radius:50% 50% 0 0; background:#6da35c; }
+#dashRow{ margin-top:6px; font-size:14px; color:#dff3ff; }
+#dashRow span{ font-weight:bold; color:#9fd4ff; }
+
+/* ===================== V5.1 普攻刀气光柱 ===================== */
+.dogSlashMark{
+  position:absolute;
+  width:100px;
+  height:100px;
+  pointer-events:none;
+  z-index:60;
+  border-radius:50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg 22deg,
+    rgba(255,255,255,0) 26deg,
+    rgba(255,255,255,.95) 40deg,
+    rgba(255,255,255,1) 90deg,
+    rgba(255,255,255,.95) 140deg,
+    rgba(255,255,255,0) 154deg,
+    transparent 158deg 360deg);
+  filter: drop-shadow(0 0 14px rgba(190,215,255,1)) drop-shadow(0 0 6px #fff);
+  transform-origin: 50% 50%;
+  opacity:0;
+  transition: transform .2s ease-out, opacity .2s ease-out;
+}
+
+/* ===================== V5.5 序章 ===================== */
+#prologue{
+  position:fixed;inset:0;background:#000;color:#fff;
+  display:none;flex-direction:column;justify-content:center;align-items:center;
+  z-index:1000;cursor:pointer;padding:40px;
+}
+#prologueText{font-size:28px;line-height:1.9;max-width:920px;text-align:center;text-shadow:0 0 8px rgba(255,255,255,.15);}
+#prologueHint{position:absolute;bottom:42px;font-size:16px;color:#aaa;animation:proBlink 1.2s infinite;}
+#prologueSkip{position:absolute;top:26px;right:34px;font-size:18px;color:#888;cursor:pointer;z-index:51;}
+#prologueSkip:hover{color:#fff;}
+@keyframes proBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ===================== V5.5 多敌人 ===================== */
+.enemyHpBox{position:absolute;width:70px;height:18px;z-index:20;text-align:center;font-size:12px;color:#fff;pointer-events:none;}
+.enemyHpFill{position:absolute;left:0;top:0;height:6px;width:100%;background:#00ff00;border:1px solid #222;}
+.enemyHpText{position:absolute;top:7px;left:0;width:70px;font-weight:bold;text-shadow:1px 1px 2px #000;}
+.frogWave{position:absolute;width:32px;height:32px;background:#00bfff;border-radius:50%;box-shadow:0 0 15px #00ffff,0 0 30px #0088ff;z-index:30;}
+.enemyImg{position:absolute;width:160px;height:160px;bottom:80px;object-fit:contain;z-index:5;}
+#levelBanner{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%);font-size:46px;font-weight:bold;color:#fff;text-shadow:3px 3px 8px #000;z-index:80;pointer-events:none;white-space:nowrap;}
+#victoryBox button{margin-top:18px;font-size:22px;padding:10px 38px;cursor:pointer;border:none;border-radius:12px;background:#ffd86b;color:#3a2a1a;font-weight:bold;}
+#victoryBox button:hover{transform:translateY(-2px);}
+
+#gameOverBox button{margin-top:18px;font-size:22px;padding:10px 38px;cursor:pointer;border:none;border-radius:12px;background:#ffd86b;color:#3a2a1a;font-weight:bold;}
+
+/* ===================== V5.6 背包面板 ===================== */
+#backpackPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:420px;max-height:70vh;overflow-y:auto;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;
+  padding:18px 22px;color:#5b3512;z-index:500;font-family:Arial,sans-serif;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+#backpackPanel .bpTitle{font-size:26px;font-weight:bold;text-align:center;margin-bottom:10px;}
+#backpackPanel .bpRow{font-size:16px;margin-bottom:8px;color:#7a4a1d;}
+#backpackPanel .bpSec{font-size:17px;font-weight:bold;margin:10px 0 4px;color:#b06a1a;border-bottom:2px solid #e8c98a;padding-bottom:2px;}
+#backpackPanel .bpItem{font-size:16px;padding:4px 6px;background:#fff6dc;border:1px solid #e8c98a;border-radius:8px;margin:3px 0;}
+#backpackPanel .bpEmpty{font-size:15px;color:#999;padding:4px 6px;}
+#backpackPanel .bpClose{margin-top:14px;text-align:center;font-size:18px;font-weight:bold;color:#fff;background:#d9902f;border-radius:10px;padding:8px;cursor:pointer;}
+
+/* ===================== V5.7 主菜单 ===================== */
+#mainMenu{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:24px;overflow-y:auto;box-sizing:border-box;
+  background:linear-gradient(180deg,#2b3a55 0%,#1b2434 100%);z-index:40;color:#fff;font-family:Arial,sans-serif;
+}
+.menuTitleArea{text-align:center;}
+#mainMenu h1{font-size:46px;margin:0;text-shadow:3px 3px 0 #000;letter-spacing:2px;}
+#mainMenu .menuSub{font-size:20px;color:#ffd86b;margin-top:4px;}
+/* 灰绿色横版大框：自动贴合内容宽度，把所有按钮都包在里面 */
+.menuCols{
+  display:flex;justify-content:center;align-items:flex-start;gap:34px;flex-wrap:wrap;
+  width:fit-content;max-width:94vw;box-sizing:border-box;
+  padding:26px 26px 30px;
+  background:linear-gradient(180deg,rgba(105,195,165,.20),rgba(48,112,92,.32));
+  border:3px solid rgba(130,225,190,.6);border-radius:26px;
+  box-shadow:0 16px 50px rgba(0,0,0,.5), inset 0 0 34px rgba(140,235,200,.08);
+}
+.menuCol{display:flex;flex-direction:column;gap:10px;align-items:center;min-width:190px;}
+.menuColTitle{font-size:16px;color:#ffd86b;letter-spacing:4px;margin-bottom:2px;text-shadow:1px 1px 0 rgba(0,0,0,.5);}
+.menuCol button{
+  font-size:18px;padding:11px 18px;border:none;border-radius:14px;cursor:pointer;text-align:center;
+  background:#ffd86b;color:#3a2a1a;font-weight:bold;box-shadow:0 5px 0 rgba(0,0,0,.35);transition:.15s;width:212px;box-sizing:border-box;
+}
+.menuCol button:hover{transform:translateY(-2px);}
+.menuCol button.locked{background:rgba(255,255,255,.16);color:#9aa8c2;cursor:not-allowed;box-shadow:none;}
+.menuCol button.locked:hover{transform:none;}
+.menuLogout{background:rgba(255,255,255,.18) !important;color:#fff !important;font-size:18px !important;padding:11px 18px !important;width:212px !important;box-sizing:border-box !important;margin-top:6px !important;}
+#mainMenu .menuHint{font-size:14px;color:#8899bb;}
+
+/* ===================== V5.7 商城/暂停 ===================== */
+#shopPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:600px;max-height:78vh;overflow-y:auto;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:18px 22px;
+  color:#5b3512;z-index:600;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+.shopItem{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff6dc;border:1px solid #e8c98a;border-radius:10px;margin:6px 0;}
+.shopName{font-size:17px;font-weight:bold;}
+.shopDesc{font-size:13px;color:#8a6a3a;font-weight:normal;margin-left:6px;}
+#pauseMenu{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1200;
+}
+.pmTitle{font-size:44px;color:#fff;margin-bottom:26px;text-shadow:2px 2px 6px #000;}
+.pmBtn{font-size:24px;padding:14px 70px;margin:8px;border:none;border-radius:14px;cursor:pointer;background:#ffd86b;color:#3a2a1a;font-weight:bold;}
+.pmBtn:hover{transform:translateY(-2px);}
+.bpUse{font-size:14px;padding:5px 14px;border:none;border-radius:8px;cursor:pointer;background:#55c84d;color:#fff;font-weight:bold;margin-left:8px;}
+.bpDrop{font-size:14px;padding:5px 14px;border:none;border-radius:8px;cursor:pointer;background:#e85b4b;color:#fff;font-weight:bold;margin-left:6px;}
+.bpHint{font-size:13px;color:#999;margin-top:8px;text-align:center;}
+.bpItem{display:flex;justify-content:space-between;align-items:center;}
+
+.bpDropAll{font-size:14px;padding:5px 14px;border:none;border-radius:8px;cursor:pointer;background:#c98a3b;color:#fff;font-weight:bold;margin-left:6px;}
+
+/* V15.7 可爱游戏鼠标：蓝色小球 + 高光（输入框保留文字光标） */
+body{cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%20viewBox%3D%220%200%2028%2028%22%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%2210%22%20fill%3D%22%233fa9f5%22%20stroke%3D%22%23bce3ff%22%20stroke-width%3D%222%22%2F%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%223.4%22%20fill%3D%22rgba(255%2C255%2C255%2C.6)%22%2F%3E%3C%2Fsvg%3E") 14 14,auto;}
+input,textarea{ cursor:text; }
+
+/* ===================== V5.9 登录 ===================== */
+#login{
+  position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
+  background:url('../assets/ui/bg_scene.png') center/cover no-repeat;z-index:2000;
+}
+#login::before{content:'';position:absolute;inset:0;background:rgba(18,28,48,.62);}
+.loginCard{
+  position:relative;text-align:center;background:linear-gradient(180deg,rgba(58,74,112,.96),rgba(34,46,74,.97));
+  border:4px solid #ffd86b;border-radius:30px;padding:36px 64px 42px;box-sizing:border-box;
+  box-shadow:0 0 0 3px rgba(255,216,107,.25), 0 18px 60px rgba(0,0,0,.7);font-family:Arial,sans-serif;max-height:94vh;overflow-y:auto;
+  backdrop-filter:blur(4px);
+}
+.loginTitle{font-size:40px;font-weight:bold;color:#fff;text-shadow:2px 2px 0 #000, 0 0 18px rgba(255,216,107,.35);}
+.loginSub{font-size:18px;color:#ffd86b;margin-top:6px;letter-spacing:2px;}
+.loginChars{display:flex;gap:18px;justify-content:center;margin:22px 0 24px;}
+.loginChars img{width:118px;height:118px;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.45));}
+#login input{
+  display:block;margin:10px auto;font-size:20px;padding:13px 22px;width:300px;text-align:center;border:none;border-radius:14px;outline:none;
+  background:#fff;color:#3a2a1a;box-shadow:inset 0 2px 6px rgba(0,0,0,.15);
+}
+#login button{
+  margin-top:20px;font-size:23px;padding:13px 66px;border:none;border-radius:14px;cursor:pointer;
+  background:linear-gradient(180deg,#ffe08a,#ffc93c);color:#3a2a1a;font-weight:bold;
+  box-shadow:0 5px 0 #b8860b;transition:.15s;
+}
+#login button:hover{transform:translateY(-2px);box-shadow:0 7px 0 #b8860b;}
+#login .loginHint{margin-top:16px;font-size:13px;color:#a9bcd8;}
+
+/* ===================== V15.2 登录左右分栏（左登录 / 右注册） ===================== */
+.loginSplit{
+  position:relative;z-index:10;display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:30px;
+  max-width:1120px;width:96%;max-height:96vh;overflow-y:auto;padding:8px;
+}
+.loginSplit .loginCard{width:460px;max-width:94vw;padding:26px 32px 30px;max-height:none;flex:0 0 auto;box-sizing:border-box;}
+#loginCard,#registerCard{display:block;}
+#registerWarn{color:#e85b4b;font-size:14px;margin-top:8px;display:none;text-shadow:none;}
+@media (max-width:1020px){
+  .loginSplit{flex-direction:column;align-items:center;gap:18px;flex-wrap:nowrap;justify-content:flex-start;}
+  .loginSplit .loginCard{width:94vw;}
+}
+
+/* ===================== V5.9 选关 ===================== */
+#levelSelect{
+  position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;overflow-y:auto;
+  background:linear-gradient(180deg,#2b3a55 0%,#1b2434 100%);z-index:42;color:#fff;font-family:Arial,sans-serif;
+}
+#levelSelect h2{font-size:36px;margin-bottom:26px;text-shadow:2px 2px 0 #000;}
+#levelList{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;max-width:700px;}
+.levelCard{
+  width:86px;height:86px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:bold;position:relative;cursor:pointer;transition:.15s;
+}
+.levelCard.unlocked{background:#ffd86b;color:#3a2a1a;box-shadow:0 5px 0 rgba(0,0,0,.3);}
+.levelCard.unlocked:hover{transform:translateY(-3px);}
+.levelCard.locked{background:rgba(255,255,255,.1);color:#8899bb;cursor:not-allowed;}
+.lvDone{position:absolute;top:4px;right:8px;font-size:16px;color:#2e9e3f;}
+.lvBack{margin-top:30px;font-size:20px;padding:12px 50px;border:none;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;font-weight:bold;}
+
+.loginRemember{display:block;margin-top:12px;font-size:15px;color:#dff3ff;cursor:pointer;}
+.loginRemember input{margin-right:6px;transform:scale(1.2);}
+
+
+/* 隐藏旧版遗留元素（避免左侧白框/破碎图） */
+#frog{display:none !important;}
+#wave{display:none !important;}
+
+/* 精英黄色持续冲击波 */
+.frogWave.elite{
+  width:44px;height:44px;background:#ffd34d;
+  box-shadow:0 0 18px #ffcc33, 0 0 34px #ff9900;
+}
+#shieldVal{font-weight:bold;color:#9fd4ff;}
+
+#loginNameWarn{color:#ff6b5b;font-size:14px;margin-top:8px;display:none;text-shadow:none;}
+
+/* ===================== V7.0 商城优化 ===================== */
+#shopPanel .bpRow{font-size:18px;color:#a05a00;font-weight:bold;}
+.shopItem{
+  background:linear-gradient(180deg,#fffdf4,#fff3d0);
+  border:1px solid #e8c98a;border-radius:12px;padding:10px 12px;
+  box-shadow:0 3px 8px rgba(0,0,0,.1);margin:8px 0;
+}
+.shopName{font-size:18px;}
+.shopDesc{font-size:13px;color:#8a6a3a;font-weight:normal;margin-left:6px;}
+
+/* ===================== V7.1 天赋树 / 图鉴 ===================== */
+#talentPanel,#codexPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;max-height:78vh;overflow-y:auto;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:18px 22px;
+  color:#5b3512;z-index:600;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+.ttTier{display:flex;gap:12px;justify-content:center;margin:10px 0;}
+.ttNode{width:140px;text-align:center;background:#fff6dc;border:2px solid #e8c98a;border-radius:14px;padding:10px 6px;}
+.ttNode.bought{border-color:#55c84d;background:#eaf9ea;}
+.ttIcon{font-size:26px;}
+.ttName{font-weight:bold;font-size:17px;margin:4px 0;}
+.ttDesc{font-size:12px;color:#8a6a3a;}
+.ttDone{color:#2e9e3f;font-weight:bold;margin-top:6px;}
+.ttLock{color:#b06a6a;font-size:13px;margin-top:6px;}
+.ttLine{text-align:center;color:#b06a1a;font-weight:bold;font-size:14px;margin:4px 0;}
+.ttSoon{text-align:center;color:#999;font-size:14px;margin-top:8px;}
+.codexItem{font-size:15px;line-height:1.6;padding:8px 10px;background:#fff6dc;border:1px solid #e8c98a;border-radius:10px;margin:6px 0;}
+
+/* ===================== V7.2 破坏物 / 商城图标 ===================== */
+.breakable{
+  position:absolute;width:52px;height:52px;bottom:80px;
+  background:#a0693c;border:3px solid #6b4423;border-radius:6px;
+  box-shadow:inset 0 0 0 3px #c98a4b;z-index:4;cursor:pointer;
+}
+.breakable::before{content:'';position:absolute;top:5px;bottom:5px;left:50%;width:3px;background:#6b4423;}
+.breakable::after{content:'';position:absolute;left:5px;right:5px;top:50%;height:3px;background:#6b4423;}
+.shopItem{display:flex;align-items:center;gap:10px;}
+.shopIcon{font-size:30px;}
+.shopInfo{flex:1;}
+
+/* ===================== V7.3 实体障碍物 ===================== */
+.solid{position:absolute;bottom:80px;z-index:4;}
+.solid.wood{background:#a0693c;border:3px solid #6b4423;border-radius:4px;box-shadow:inset 0 0 0 3px #c98a4b;}
+.solid.wood::before,.solid.wood::after{content:'';position:absolute;background:#6b4423;}
+.solid.wood::before{top:5px;bottom:5px;left:50%;width:3px;}
+.solid.wood::after{left:5px;right:5px;top:50%;height:3px;}
+.solid.steel{background:#8a9bb0;border:3px solid #4a5a6a;border-radius:4px;box-shadow:inset 0 0 0 3px #b8c6d4;}
+.solid.steel::before,.solid.steel::after{content:'';position:absolute;background:#4a5a6a;}
+.solid.steel::before{top:6px;bottom:6px;left:50%;width:3px;}
+.solid.steel::after{left:6px;right:6px;top:50%;height:3px;}
+.solid.building{background:#c98a5b;border:3px solid #7a4a24;border-radius:8px 8px 0 0;box-shadow:inset 0 0 0 3px #e0b080;}
+.solid.building::before{content:'🪟';position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:22px;}
+.bpSell{font-size:13px;padding:4px 10px;border:none;border-radius:8px;cursor:pointer;background:#d9a03c;color:#fff;font-weight:bold;margin-left:6px;}
+
+/* ===================== V7.4 爆炸箱/哨塔/选关颜色/技能横幅 ===================== */
+.solid.explosive{background:#d9503c;border:3px solid #8c2a1a;border-radius:50%;box-shadow:0 0 18px rgba(255,80,50,.7), inset 0 0 0 4px #ff7a55;}
+.solid.explosive::before{content:'💣';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;}
+.solid.tower{
+  background:linear-gradient(180deg,#e0d0b0 0%,#a09070 55%,#6a5a3a 100%);
+  border:3px solid #4a3f2a;border-radius:4px 4px 0 0;
+  box-shadow:inset 0 0 0 3px #cbb894;
+}
+.solid.tower::before{content:'';position:absolute;top:0;left:0;right:0;height:12px;background:#b8a883;border-bottom:3px solid #4a3f2a;box-shadow:0 3px 0 3px rgba(0,0,0,.15);}
+.solid.tower::after{content:'';position:absolute;top:-34px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:22px solid transparent;border-right:22px solid transparent;border-bottom:36px solid #7a6a4a;filter:drop-shadow(0 0 4px rgba(0,0,0,.4));}
+.explosionFx{position:absolute;width:120px;height:120px;pointer-events:none;z-index:70;background:radial-gradient(circle, #fff 0%, #ffcc33 35%, #ff6633 60%, transparent 75%);border-radius:50%;animation:explode .5s ease-out forwards;}
+@keyframes explode{from{transform:scale(.3);opacity:1}to{transform:scale(1.6);opacity:0}}
+.levelCard.elite.unlocked{background:linear-gradient(180deg,#c39bd3,#9b59d0);color:#fff;}
+.levelCard.boss.unlocked{background:linear-gradient(180deg,#f08a7a,#e85b4b);color:#fff;}
+.skillUnlock{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);text-align:center;color:#eaf6ff;font-size:34px;font-weight:bold;text-shadow:3px 3px 0 #000, 0 0 16px rgba(0,0,0,.8);z-index:800;animation:skillPop 3.5s ease forwards;pointer-events:none;}
+.skillUnlock span{font-size:52px;display:block;margin-top:8px;}
+@keyframes skillPop{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}15%{transform:translate(-50%,-50%) scale(1.1);opacity:1}80%{opacity:1}100%{opacity:0}}
+
+/* 中途离开确认弹窗 */
+#confirmPanel{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:700;}
+#leaveConfirmPanel{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:1300;}
+.confirmCard{background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:28px 36px;text-align:center;color:#5b3512;box-shadow:0 12px 40px rgba(0,0,0,.5);font-family:Arial,sans-serif;}
+.confirmTitle{font-size:26px;font-weight:bold;margin-bottom:10px;}
+.confirmText{font-size:16px;color:#a05a00;margin-bottom:20px;}
+.confirmBtns{display:flex;gap:14px;justify-content:center;}
+.confirmBtns button{font-size:19px;padding:11px 30px;border:none;border-radius:12px;cursor:pointer;font-weight:bold;}
+.confirmYes{background:#e85b4b;color:#fff;}
+.confirmNo{background:#d9902f;color:#fff;}
+
+/* ===================== V7.7 技能升级面板 ===================== */
+#skillUpgradePanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;max-height:80vh;overflow-y:auto;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:18px 22px;
+  color:#5b3512;z-index:600;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+#skillUpgradePanel .bpTitle{font-size:26px;font-weight:bold;text-align:center;margin-bottom:10px;}
+#skillUpgradePanel .bpRow{font-size:16px;margin-bottom:8px;color:#7a4a1d;}
+#skillUpgradePanel .bpClose{margin-top:14px;text-align:center;font-size:18px;font-weight:bold;color:#fff;background:#d9902f;border-radius:10px;padding:8px;cursor:pointer;}
+
+/* ===================== V7.9 设置面板 ===================== */
+#settingsPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:18px 22px;
+  color:#5b3512;z-index:620;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+#settingsPanel .bpTitle{font-size:26px;font-weight:bold;text-align:center;margin-bottom:10px;}
+#settingsPanel .bpClose{margin-top:16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;background:#d9902f;border-radius:10px;padding:8px;cursor:pointer;}
+.setRow{display:flex;align-items:center;gap:12px;padding:10px 6px;font-size:17px;font-weight:bold;}
+.setRow input[type=range]{flex:1;height:6px;accent-color:#d9902f;cursor:pointer;}
+.setRow b{min-width:52px;text-align:right;color:#b06a1a;font-size:15px;}
+/* ===================== V8.0 主角状态面板 / 图鉴详情 / 菜单附加 ===================== */
+#charPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:640px;max-height:82vh;overflow-y:auto;
+  background:rgba(255,248,220,.97);border:4px solid #d9902f;border-radius:22px;padding:18px 22px;
+  color:#5b3512;z-index:610;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+#charPanel .bpTitle{font-size:26px;font-weight:bold;text-align:center;margin-bottom:10px;}
+#charPanel .bpRow{font-size:15px;margin:8px 0;color:#7a4a1d;}
+#charPanel .bpClose{margin-top:14px;text-align:center;font-size:18px;font-weight:bold;color:#fff;background:#d9902f;border-radius:10px;padding:8px;cursor:pointer;}
+.charCardRow{display:flex;gap:14px;}
+.charStat{flex:1;background:#fff6dc;border:2px solid #e8c98a;border-radius:14px;padding:12px;font-size:14px;line-height:1.9;}
+.charStat .csIcon{font-size:34px;}
+.charUpRow{text-align:center;margin-top:12px;}
+.setDanger{margin-top:6px;padding:10px 6px;border-top:1px dashed #e8c98a;}
+.setDanger .bpUse{background:#e85b4b;}
+.codexItem.clickable{cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.codexItem.clickable:hover{background:#ffeec2;border-color:#d9902f;}
+.codexGo{color:#b06a1a;font-weight:bold;font-size:13px;}
+#codexDetailPanel{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:560px;min-height:260px;
+  background:rgba(255,248,220,.98);border:4px solid #d9902f;border-radius:22px;padding:20px;
+  color:#5b3512;z-index:650;font-family:Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);
+  display:flex;gap:18px;align-items:center;
+}
+#codexDetailPanel .cdImg{width:200px;height:200px;flex-shrink:0;background:#fff6dc;border:2px solid #e8c98a;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#codexDetailPanel .cdImg img{max-width:100%;max-height:100%;object-fit:contain;}
+#codexDetailPanel .cdEmoji{font-size:110px;}
+#codexDetailPanel .cdInfo{flex:1;}
+#codexDetailPanel .cdName{font-size:26px;font-weight:bold;margin-bottom:10px;}
+#codexDetailPanel .cdText{font-size:15px;line-height:1.8;}
+#codexDetailPanel .bpClose{margin-top:16px;text-align:center;font-size:16px;font-weight:bold;color:#fff;background:#d9902f;border-radius:10px;padding:8px;cursor:pointer;}
+/* ===================== V8.1 困难模式 / 设置备注 / 升级按钮 ===================== */
+.lvModes{display:flex;gap:6px;justify-content:center;margin-top:6px;}
+.lvModeBtn{font-size:12px;padding:3px 10px;border:none;border-radius:8px;cursor:pointer;background:#ffd86b;color:#3a2a1a;font-weight:bold;}
+.lvModeBtn.lvHardBtn{background:#e85b4b;color:#fff;}
+.setNote{font-size:12px;color:#8a6a3a;font-weight:normal;margin-left:4px;}
+.charUpRow .bpUse{background:#ffd86b;color:#3a2a1a;font-size:17px;padding:8px 22px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;box-shadow:0 4px 0 rgba(0,0,0,.25);}
+.charUpRow .bpUse:hover{transform:translateY(-1px);}
+/* ===================== V8.2 选关界面 顶部按钮 ===================== */
+.lvBackTop{position:absolute;top:18px;left:18px;font-size:17px;padding:9px 22px;border:none;border-radius:10px;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;font-weight:bold;z-index:50;}
+.lvBackTop:hover{background:rgba(255,255,255,.3);}
+.lvModeToggle{position:absolute;top:18px;right:18px;font-size:17px;padding:9px 22px;border:none;border-radius:10px;cursor:pointer;background:#ffd86b;color:#3a2a1a;font-weight:bold;z-index:50;box-shadow:0 4px 0 rgba(0,0,0,.3);}
+.lvModeToggle.hard{background:#e85b4b;color:#fff;}
+/* ===================== V8.5 防止图片/文字被选中变蓝 ===================== */
+body{ -webkit-user-select:none; user-select:none; }
+img{ -webkit-user-drag:none; user-drag:none; }
+/* ===================== V9.0 第15关 Boss 战 ===================== */
+#l15Timer{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:30px;font-weight:900;color:#ff5b4b;text-shadow:2px 2px 0 #000,0 0 14px rgba(255,60,60,.7);z-index:80;pointer-events:none;}
+#l15Story{position:fixed;inset:0;background:#06030d;z-index:900;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#l15Story .storyCard{max-width:900px;text-align:center;padding:34px 48px;background:rgba(28,14,52,.9);border:3px solid #a05ae8;border-radius:18px;}
+#l15Story .storySub{font-size:17px;color:#c99bff;margin-bottom:12px;}
+#l15Story .storyText{font-size:24px;color:#fff;line-height:1.7;text-shadow:1px 1px 0 #000;}
+#l15Story .storyHint{margin-top:18px;font-size:15px;color:#9fd4ff;}
+.l15Hint{position:absolute;left:50%;top:38%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#eaf6ff;text-shadow:2px 2px 4px #000, 0 0 10px rgba(0,0,0,.7);z-index:90;pointer-events:none;animation:l15HintPop 2.2s forwards;}
+@keyframes l15HintPop{0%{opacity:0;transform:translateX(-50%) scale(.8)}15%{opacity:1;transform:translateX(-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
+.bossTelegraph{position:absolute;bottom:96px;border-radius:50%;border:4px solid rgba(255,60,60,.9);background:rgba(255,60,60,.18);z-index:70;pointer-events:none;animation:l15Tele .65s ease-out forwards;}
+@keyframes l15Tele{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.25);opacity:0}}
+.bossWarnBar{position:absolute;left:0;right:0;bottom:70px;height:10px;background:linear-gradient(90deg,rgba(255,60,60,0),rgba(255,60,60,.9),rgba(255,60,60,0));z-index:75;pointer-events:none;animation:l15Warn .65s steps(2) infinite;}
+@keyframes l15Warn{50%{opacity:.35}}
+.bossFx{position:absolute;pointer-events:none;z-index:65;}
+.bossFx.quake{background:radial-gradient(ellipse at center, rgba(120,60,200,.85), rgba(40,10,80,.6));border-radius:50%;box-shadow:0 0 18px rgba(140,70,230,.8);bottom:104px;}
+.bossFx.wave{background:radial-gradient(ellipse at center, rgba(160,90,240,.9), rgba(60,20,120,.7));border-radius:50%;box-shadow:0 0 14px rgba(150,80,240,.8);bottom:104px;}
+.bossFx.pellet{background:radial-gradient(circle, #e0b0ff, #7a2ae0 70%);border-radius:50%;box-shadow:0 0 12px rgba(180,90,255,.9);bottom:104px;}
+.bossFx.breath{background:linear-gradient(180deg, rgba(200,120,255,.9), rgba(60,10,120,.85));box-shadow:0 0 30px rgba(160,80,255,.9);bottom:104px;}
+.bossFx.charge{background:radial-gradient(ellipse, rgba(180,90,255,.5), transparent 70%);z-index:40;}
+.l15PlotFlash{position:fixed;inset:0;background:radial-gradient(circle, rgba(200,100,255,.7), rgba(20,0,40,.95));z-index:850;pointer-events:none;animation:l15Flash .9s ease-out forwards;}
+@keyframes l15Flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+.lvReplayBtnWrap{margin-top:16px;width:100%;display:flex;justify-content:center;}
+.lvReplayBtn{font-size:16px;padding:10px 24px;border:none;border-radius:12px;cursor:pointer;background:#a05ae8;color:#fff;font-weight:bold;box-shadow:0 4px 0 rgba(0,0,0,.3);}
+.lvReplayBtn:hover{transform:translateY(-2px);}
+/* ===================== V9.1 Boss 冲击波贴图 ===================== */
+.bossFx.waveImg{position:absolute;left:0;object-fit:contain;z-index:65;pointer-events:none;filter:drop-shadow(0 0 10px rgba(150,80,255,.7));}
+/* ===================== V9.2 剧情分镜图片 ===================== */
+#l15Story .storyImgWrap{text-align:center;margin-bottom:12px;}
+#l15Story .storyImg{max-width:820px;max-height:400px;border-radius:12px;border:2px solid #a05ae8;object-fit:cover;}
+/* 黑暗吐息贴图版 */
+.bossFx.breathImg{position:absolute;left:0;object-fit:cover;z-index:65;pointer-events:none;filter:drop-shadow(0 0 12px rgba(160,80,255,.8));}
+/* 泰山压顶落点警告圈 / 空中暗弹 */
+.bossTelegraph.smash{border-width:6px;background:rgba(255,60,60,.22);animation:l15TeleSmash 2.5s ease-out infinite;}
+@keyframes l15TeleSmash{0%{transform:scale(.85);opacity:.9}50%{transform:scale(1.12);opacity:1}100%{transform:scale(.95);opacity:.9}}
+.bossFx.pelletImg{position:absolute;left:0;object-fit:contain;z-index:65;pointer-events:none;filter:drop-shadow(0 0 8px rgba(180,90,255,.8));}
+.bossFx.annihilImg{position:absolute;left:0;object-fit:cover;z-index:66;pointer-events:none;filter:drop-shadow(0 0 18px rgba(160,60,255,.85));}
+/* 泰山压顶：地面椭圆落点警告（像妙脆角猫大招那样） */
+.bossSmashWarn{position:absolute;bottom:100px;border-radius:50%;border:4px solid rgba(255,60,60,.85);background:rgba(255,60,60,.16);box-shadow:0 0 22px rgba(255,60,60,.5), inset 0 0 18px rgba(255,60,60,.25);z-index:75;pointer-events:none;animation:smashWarn 2.5s ease-out infinite;}
+@keyframes smashWarn{0%{transform:scaleX(.9);opacity:.85}50%{transform:scaleX(1.08);opacity:1}100%{transform:scaleX(.95);opacity:.9}}
+/* 登录界面：本设备账号列表 */
+#accountList{margin-top:12px;text-align:left;}
+#accountList .accTitle{font-size:13px;color:#9fd4ff;margin-bottom:6px;}
+#accountList .accItem{display:flex;align-items:center;gap:8px;font-size:15px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 10px;margin:4px 0;cursor:pointer;}
+#accountList .accItem:hover{background:rgba(255,216,107,.25);border-color:#ffd86b;}
+#accountList .accNum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#ffd86b;color:#3a2a1a;font-size:12px;font-weight:bold;}
+/* Boss 血条 UI：紫色/红色框架区分 */
+#frogHUD.boss{border-color:#a05ae8 !important;box-shadow:0 0 18px rgba(160,90,232,.8) !important;}
+#frogHUD.boss .title{color:#e0b0ff !important;text-shadow:0 0 10px rgba(200,120,255,.8);}
+#frogHUD.boss .hudBar{border-color:#a05ae8 !important;}
+#frogHUD.boss .hudBar>div{background:linear-gradient(90deg,#8a2ae0,#e0b0ff) !important;}
+/* 暗影湮灭：贴地光束，由JS控制尺寸/位置/冲向日 */
+.annihilationLaser{position:absolute;z-index:880;pointer-events:none;opacity:1;filter:drop-shadow(0 0 18px rgba(160,60,255,.8));}
+/* 剧情杀命中后的濒死红光定格 */
+.l15PlotFade{position:absolute;inset:0;background:radial-gradient(ellipse at center, rgba(120,0,30,.12) 0%, rgba(140,0,40,.55) 60%, rgba(60,0,15,.85) 100%);z-index:890;pointer-events:none;animation:l15FadeIn .25s ease-out forwards;}
+@keyframes l15FadeIn{from{opacity:0}to{opacity:1}}
+
+/* 登录账号列表：删除按钮 */
+#accountList .accItem .accName{flex:1;}
+#accountList .accDel{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(232,91,75,.85);color:#fff;font-size:13px;font-weight:bold;cursor:pointer;flex-shrink:0;}
+#accountList .accDel:hover{background:#ff5b4b;}
+/* 新手礼包小包裹 */
+.giftIcon{position:fixed;top:18px;right:24px;width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#ffd86b,#f5a623);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;z-index:500;box-shadow:0 6px 18px rgba(0,0,0,.4);animation:giftBob 1.6s ease-in-out infinite;}
+@keyframes giftBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.giftIcon:hover{transform:scale(1.08);}
+/* 难度模式按钮 + 排行榜 + 结算 */
+.diffBtns{display:flex;gap:6px;}
+.diffBtn{font-size:13px;padding:6px 12px;border:none;border-radius:8px;cursor:pointer;background:#e8c98a;color:#5b3512;font-weight:bold;}
+.diffBtn.on{background:#ffd86b;box-shadow:0 0 0 2px #b8860b;}
+.rankTitle{margin:14px 0 6px;font-size:18px;color:#ffd86b;font-weight:bold;}
+.rankRow{display:flex;align-items:center;gap:10px;font-size:16px;color:#fff;padding:5px 8px;background:rgba(255,255,255,.06);border-radius:8px;margin:3px 0;}
+.rankNum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-weight:bold;background:rgba(255,255,255,.12);}
+/* V10.6 无限模式子菜单 / 排行榜 / 切换角色提醒 */
+#infiniteMenu,#infiniteLeaderboard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:300;}
+.infiniteCard{background:rgba(38,22,10,.96);border:4px solid #d9902f;border-radius:22px;padding:34px 52px;text-align:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:Arial,sans-serif;min-width:440px;display:flex;flex-direction:column;align-items:center;}
+.infiniteTitle{font-size:30px;font-weight:bold;margin-bottom:8px;color:#ffd86b;}
+.infiniteSub{font-size:15px;color:#d8b98a;margin-bottom:18px;}
+.infiniteCard .rankRow{min-width:360px;justify-content:flex-start;}
+.switchCharNoAsk{display:block;font-size:14px;color:#a05a00;margin:2px 0 16px;cursor:pointer;}
+.lvHint{font-size:15px;color:#ffd86b;margin-top:-14px;margin-bottom:12px;}
+
+/* 排行榜头像 + 账户头像 + 失败建议 */
+.rankAvatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,216,107,.6);flex-shrink:0;background:#333;}
+.accAvatar{width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid #ffd86b;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+.failAdvice{font-size:14px;color:#ffd86b;max-width:420px;line-height:1.7;margin:8px auto 14px;}
+
+/* 成就 */
+.achPopup{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a2a6a,#2a1545);border:3px solid #ffd700;border-radius:16px;padding:14px 26px;text-align:center;color:#fff;font-size:20px;font-weight:bold;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:achPop .35s ease-out;}
+@keyframes achPop{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+#achievePanel .achList{max-height:420px;overflow-y:auto;padding:4px;}
+#achievePanel .achItem{display:flex;align-items:center;gap:12px;padding:9px 12px;margin:5px 0;border-radius:10px;background:rgba(255,255,255,.06);}
+#achievePanel .achItem.got{border-left:4px solid #ffd700;background:rgba(255,216,107,.12);}
+#achievePanel .achItem.locked{border-left:4px solid #555;opacity:.75;}
+.achIcon{font-size:26px;width:34px;text-align:center;}
+.achInfo{flex:1;font-size:15px;color:#fff;}
+.achDesc{font-size:12px;color:#b9c7e8;}
+.achReward{font-size:12px;color:#ffd86b;}
+.achDone{color:#ffd700;font-weight:bold;}
+.achLock{color:#8899bb;font-size:13px;}
+
+/* 排行榜四列布局 */
+.lbCard{min-width:900px;max-width:96vw;}
+.lbGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;margin:6px 0 14px;}
+.lbCol{background:rgba(255,255,255,.05);border-radius:12px;padding:10px;border:2px solid rgba(255,216,107,.25);}
+.lbColTitle{font-size:16px;font-weight:bold;color:#ffd86b;text-align:center;margin-bottom:8px;}
+.lbCol .rankRow{font-size:13px;min-width:0;flex-wrap:wrap;}
+.lbCol .rankAvatar{width:22px;height:22px;}
+
+/* 账户信息面板（卡通风） */
+#accountPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:440px;max-height:78vh;overflow-y:auto;background:rgba(255,248,220,.98);border:4px solid #d9902f;border-radius:22px;padding:18px 24px;color:#5b3512;z-index:600;font-family:Arial,sans-serif;box-shadow:0 12px 44px rgba(0,0,0,.55);}
+#accountPanel .accBody{text-align:center;}
+#accountPanel .accAvatarWrap{display:inline-block;position:relative;margin:4px 0 10px;}
+#accountPanel .accAvatar{width:104px;height:104px;border-radius:50%;object-fit:cover;border:5px solid #ffd86b;box-shadow:0 0 0 3px #b06a1a, 0 6px 18px rgba(0,0,0,.3);background:#fff;}
+#accountPanel .accAvatarTag{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);background:#d9902f;color:#fff;font-size:12px;padding:2px 10px;border-radius:10px;white-space:nowrap;}
+#accountPanel .accName{font-size:22px;font-weight:bold;margin:16px 0 14px;color:#5b3512;}
+#accountPanel .accRow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff6dc;border:2px solid #e8c98a;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:15px;text-align:left;}
+#accountPanel .accRowLabel{font-weight:bold;color:#7a4a1d;}
+#accountPanel .accCost{font-size:12px;color:#a05a00;font-weight:normal;}
+#accountPanel .accFileBtn{cursor:pointer;display:inline-block;margin:0;}
+#accountPanel .accNote{font-size:12.5px;color:#a05a00;margin:12px 4px 4px;line-height:1.7;text-align:left;}
+
+/* 特殊玩法关（蓝色） */
+.levelCard.special.unlocked{background:linear-gradient(180deg,#5fc8ff,#2f7fe8);color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.3);}
+.specialBeacon{position:absolute;bottom:96px;width:84px;height:110px;background:radial-gradient(circle at 50% 30%, #fff8c0, #ffd700 55%, rgba(255,180,0,.75));border-radius:50% 50% 26% 26%;box-shadow:0 0 30px rgba(255,215,0,.9), 0 0 60px rgba(255,215,0,.35);z-index:60;pointer-events:none;animation:beaconGlow 1.2s ease-in-out infinite;}
+@keyframes beaconGlow{0%,100%{box-shadow:0 0 24px rgba(255,215,0,.75)}50%{box-shadow:0 0 48px rgba(255,215,0,1)}}
+.specialTimer{position:absolute;top:14px;right:20px;font-size:28px;font-weight:bold;color:#ffd86b;text-shadow:2px 2px 0 #000;z-index:80;font-family:Arial,sans-serif;}
+.specialBanner{position:absolute;top:16%;left:50%;transform:translateX(-50%);background:rgba(30,70,120,.92);border:3px solid #4fc3f7;border-radius:14px;padding:10px 24px;color:#fff;font-size:20px;font-weight:bold;z-index:85;text-align:center;box-shadow:0 6px 22px rgba(0,0,0,.45);font-family:Arial,sans-serif;white-space:nowrap;}
+#specialBeaconHp{position:absolute;bottom:214px;left:50%;transform:translateX(-50%);height:10px;background:linear-gradient(90deg,#ffd700,#ffaa00);border-radius:6px;z-index:62;border:2px solid rgba(0,0,0,.35);}
+
+/* 时缓：Boss大招慢动作提示 */
+.slowmoPrompt{position:fixed;top:32%;left:50%;transform:translateX(-50%);background:rgba(15,25,70,.94);border:3px solid #4fc3f7;border-radius:18px;padding:18px 36px;color:#fff;font-size:26px;font-weight:bold;text-align:center;z-index:900;box-shadow:0 12px 44px rgba(0,0,0,.65);animation:slowmoPulse .5s ease-in-out infinite;font-family:Arial,sans-serif;white-space:nowrap;}
+@keyframes slowmoPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+.slowmoTint{position:fixed;inset:0;background:linear-gradient(180deg,rgba(25,35,55,.45),rgba(12,18,30,.58));filter:grayscale(.4);pointer-events:none;z-index:890;}
+
+/* 成就面板（奖杯格子，卡通风） */
+#achievePanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:660px;max-height:80vh;overflow-y:auto;background:rgba(255,248,220,.98);border:4px solid #d9902f;border-radius:22px;padding:18px 24px;color:#5b3512;z-index:600;font-family:Arial,sans-serif;box-shadow:0 12px 44px rgba(0,0,0,.55);}
+#achievePanel .achGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:8px 0 14px;}
+#achievePanel .achTrophy{background:#fff6dc;border:3px solid #e8c98a;border-radius:16px;padding:14px 6px;text-align:center;cursor:default;}
+#achievePanel .achTrophy.got{border-color:#ffd700;background:rgba(255,216,107,.18);box-shadow:0 0 12px rgba(255,215,0,.35);}
+#achievePanel .achTrophy.locked{opacity:.62;filter:grayscale(.4);}
+#achievePanel .achTrophyIcon{font-size:38px;line-height:1.2;}
+#achievePanel .achTrophyName{font-size:14px;font-weight:bold;color:#5b3512;margin-top:7px;}
+#achievePanel .achTrophyReward{font-size:12px;color:#a05a00;margin-top:4px;}
+
+/* 成就奖杯分色 + 排行榜清空按钮 */
+#achievePanel .achTrophyIcon{width:64px;height:64px;line-height:64px;border-radius:50%;margin:0 auto;font-size:30px;color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.4);}
+.lbActions{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:6px;}
+.lbClearBtn{font-size:14px;padding:9px 18px;border:none;border-radius:10px;cursor:pointer;background:#e85b4b;color:#fff;font-weight:bold;box-shadow:0 4px 0 rgba(0,0,0,.25);}
+.lbClearBtn:hover{transform:translateY(-2px);}
+
+/* 天赋树按列分组 */
+#talentPanel{width:820px;}
+.ttCols{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:6px 0 12px;}
+.ttCol{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(255,246,220,.5);border:2px solid #e8c98a;border-radius:14px;padding:10px 8px;min-width:118px;}
+.ttColTitle{font-size:15px;font-weight:bold;color:#b06a1a;margin-bottom:2px;}
+
+/* 无限模式中转站（三选一长条，卡通风） */
+.cpCard{background:rgba(255,248,220,.98);border:4px solid #d9902f;border-radius:22px;padding:26px 34px;text-align:center;color:#5b3512;font-family:Arial,sans-serif;box-shadow:0 12px 44px rgba(0,0,0,.55);min-width:440px;}
+.cpTitle{font-size:28px;font-weight:bold;color:#b06a1a;margin-bottom:4px;}
+.cpSub{font-size:15px;color:#a05a00;margin-bottom:16px;}
+.cpOpt{display:flex;align-items:center;gap:14px;background:#fff6dc;border:3px solid #e8c98a;border-radius:14px;padding:13px 18px;margin:10px 0;cursor:pointer;text-align:left;transition:.15s;}
+.cpOpt:hover{border-color:#ffd86b;background:rgba(255,216,107,.22);transform:translateY(-2px);}
+.cpOptIcon{font-size:30px;}
+.cpOptInfo{font-size:15px;color:#5b3512;}
+.cpOptInfo b{font-size:16px;}
+.cpOptInfo span{font-size:13px;color:#8a6a3a;}
+
+/* 获得新技能弹窗（暂停3秒） */
+.skillUnlockPopup{position:fixed;top:96px;right:26px;left:auto;transform:none;z-index:1000;pointer-events:none;}
+.supCard{background:linear-gradient(180deg,#4a2a6a,#2a1545);border:4px solid #ffd700;border-radius:22px;padding:30px 50px;text-align:center;color:#fff;font-size:24px;font-weight:bold;font-family:Arial,sans-serif;box-shadow:0 12px 44px rgba(0,0,0,.6);animation:supPop .4s ease-out;}
+.supCard b{font-size:30px;color:#ffd86b;}
+.supCard span{font-size:15px;color:#c9b8e8;font-weight:normal;}
+@keyframes supPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* 登录页两个按钮 */
+.loginBtns{display:flex;gap:12px;justify-content:center;margin-top:6px;}
+.loginBtns button{flex:1;font-size:17px;padding:11px 0;border:none;border-radius:12px;cursor:pointer;font-weight:bold;background:#ffd86b;color:#3a2a1a;box-shadow:0 4px 0 rgba(0,0,0,.25);}
+.loginBtns button:last-child{background:#f5a623;color:#fff;}
+.loginBtns button:hover{transform:translateY(-2px);}
+
+/* 登录/注册两个框 */
+.loginRegBtn{background:rgba(255,255,255,.14)!important;color:#fff!important;}
+#registerCard .loginTitle,#registerCard .loginSub{margin-bottom:6px;}
+
+/* 登录/注册框提升到最上层，输入框保证可点 */
+#login .loginCard{position:relative;z-index:10;}
+#login input{position:relative;z-index:20;pointer-events:auto !important;}
+#login button{position:relative;z-index:20;pointer-events:auto !important;}
+#login .loginRemember,#login .loginHint,#login #accountList{position:relative;z-index:20;}
+
+/* 影踪试炼次数显示（屏幕上方） */
+.hitlimitCounter{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(30,10,10,.88);border:3px solid #e85b4b;border-radius:14px;padding:8px 22px;color:#fff;font-size:22px;font-weight:bold;z-index:90;font-family:Arial,sans-serif;letter-spacing:1px;}
+/* 注册按钮/返回登录按钮 */
+.loginRegBtn{background:rgba(255,255,255,.16)!important;color:#fff!important;margin-top:10px!important;font-size:17px!important;padding:10px 40px!important;}
+
+/* V15.8 训练营 / 主页提示条 / 新标识 */
+.menuTipBar{
+  max-width:760px;margin:6px auto 14px;padding:8px 16px;font-size:15px;color:#fff;
+  background:linear-gradient(90deg,rgba(255,216,107,.18),rgba(63,169,245,.22));
+  border:2px solid rgba(255,216,107,.55);border-radius:20px;text-shadow:1px 1px 0 rgba(0,0,0,.5);
+}
+.menuNewBadge{
+  display:inline-block;margin-left:6px;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:bold;
+  background:#ff5b4b;color:#fff;vertical-align:middle;animation:newPulse 1.6s ease-in-out infinite;
+}
+@keyframes newPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.08)}}
+.trainingChars{display:flex;gap:12px;justify-content:center;margin:16px 0 4px;}
+.scarecrowImg{object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45));}
+
+/* V15.9 稻草人总伤害数字 */
+.scarecrowDmg{position:absolute;width:200px;text-align:center;color:#ff4b4b;font-size:28px;font-weight:900;text-shadow:2px 2px 0 #000,0 0 12px rgba(255,60,60,.6);pointer-events:none;z-index:30;font-family:Arial,sans-serif;}
+
+/* ===================== V15.16 手机触屏操作 ===================== */
+#mobileControls{display:none;position:fixed;inset:0;z-index:150;pointer-events:none;touch-action:none;font-family:Arial,sans-serif;}
+#mobileControls .mcLeft{position:absolute;left:14px;bottom:18px;pointer-events:auto;display:flex;gap:10px;align-items:center;}
+#mobileControls .mcRight{position:absolute;right:12px;bottom:16px;pointer-events:auto;display:grid;grid-template-columns:repeat(3,auto);gap:8px;align-items:center;justify-items:center;}
+.mcBtn{
+  width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.7);
+  background:rgba(20,32,50,.55);color:#fff;font-size:24px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;touch-action:none;
+  user-select:none;-webkit-user-select:none;box-shadow:0 3px 0 rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
+}
+.mcBtn:active{transform:scale(.9);background:rgba(255,216,107,.5);}
+.mcMove{background:rgba(63,169,245,.5);}
+.mcJump{background:rgba(85,200,77,.5);}
+.mcAtk{background:rgba(255,216,107,.6);font-size:28px;}
+.mcDash{background:rgba(160,120,255,.55);}
+.mcSkill{width:46px;height:46px;font-size:18px;background:rgba(255,255,255,.22);}
+.mcSkill.mcR.aiming{background:rgba(255,91,75,.75);box-shadow:0 0 14px rgba(255,91,75,.9);}
+.mcPause{width:42px;height:42px;font-size:18px;background:rgba(0,0,0,.45);}
+.mcHint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#ffd86b;font-size:12px;padding:4px 12px;border-radius:12px;pointer-events:none;white-space:nowrap;}
+@media (pointer:coarse){ #mobileControls{display:flex;} }
+
+/* ===================== 手机屏幕适配（HUD 缩小、技能栏上移避开按钮） ===================== */
+@media (max-width:820px){
+  #v13ui #playerHUD{transform:scale(.78);transform-origin:top left;}
+  #v13ui #frogHUD{transform:scale(.78);transform-origin:top right;}
+  #skillBar{bottom:132px !important;transform:scale(.72);transform-origin:bottom center;}
+  #skillBar .skill{width:64px;height:64px;font-size:14px;}
+  #l15Timer{font-size:24px;}
+  .hud{min-width:150px;}
+}

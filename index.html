@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b3a55">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>妙脆角猫与刀盾狗 - V5.0</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/ui/icon-192.png">
+<link rel="icon" type="image/png" href="assets/ui/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- V5.9 登录 -->
+<div id="login">
+  <div class="loginSplit">
+    <!-- 左：登录 -->
+    <div class="loginCard" id="loginCard">
+      <div class="loginTitle">🐱 妙脆角猫与刀盾狗 🐶</div>
+      <div class="loginSub">的奇妙探险 · 伊莉大陆</div>
+      <div class="loginChars">
+        <img src="assets/players/miaocuijiao_cat/sprites/miaocat_idle.png" alt="妙脆角猫">
+        <img src="assets/players/daodungou/sprites/daodungou_idle.png" alt="刀盾狗">
+      </div>
+      <input id="loginName" placeholder="账号（昵称）" maxlength="12" oninput="checkLoginName()">
+      <div id="loginNameWarn"></div>
+      <input id="loginPass" type="password" placeholder="密码（至少6位）" maxlength="20" oninput="checkLoginName()">
+      <label class="loginRemember"><input type="checkbox" id="loginRemember"> 免密登录</label>
+      <button onclick="doLogin()">🔑 登录</button>
+      <div class="loginHint">点击下方已保存的账号，密码会自动填入，再点「登录」</div>
+      <div id="accountList"></div>
+    </div>
+    <!-- 右：注册 -->
+    <div class="loginCard" id="registerCard">
+      <div class="loginTitle">🆕 注册新账号</div>
+      <div class="loginSub">创建后自动保存，下次点账号即可登录</div>
+      <input id="registerName" placeholder="新昵称（唯一，不能重名）" maxlength="12" oninput="checkRegisterName()">
+      <div id="registerWarn"></div>
+      <input id="registerPass" type="password" placeholder="密码（至少6位）" maxlength="20" oninput="checkRegisterName()">
+      <label class="loginRemember"><input type="checkbox" id="regRemember"> 免密登录</label>
+      <button onclick="doRegister()">✅ 注册</button>
+    </div>
+  </div>
+</div>
+
+<!-- V5.5 序章剧情（黑屏白字，点击推进） -->
+<div id="prologue" onclick="nextPrologue()">
+  <div id="prologueText"></div>
+  <div id="prologueHint">▸ 点击继续</div>
+  <div id="prologueSkip" onclick="skipPrologue()">跳过 ▶</div>
+</div>
+
+<!-- V5.9 选关 -->
+<div id="levelSelect">
+  <button class="lvBackTop" onclick="backToMenu()">🏠 返回主菜单</button>
+  <button id="lvModeToggle" class="lvModeToggle" onclick="toggleLevelMode()">🎯 普通模式</button>
+  <h2>🗺️ 选择关卡</h2>
+  <div class="lvHint">▸ 点击某一关后，选择角色即可开始挑战</div>
+  <div id="levelList"></div>
+</div>
+
+<!-- V5.7 主菜单 -->
+<div id="mainMenu">
+  <div class="menuTitleArea">
+    <h1>🐱 妙脆角猫与刀盾狗 🐶</h1>
+    <div class="menuSub">的奇妙探险 · 伊莉大陆</div>
+  </div>
+  <div class="menuTipBar">💡 点「📖 图鉴」看技能/大招用法 · 「🏋️ 训练营」免费练连招 · 「♾️ 无限模式」攒金币</div>
+  <div class="menuCols">
+    <div class="menuCol">
+      <div class="menuColTitle">⚔️ 战斗</div>
+      <button onclick="goSelect()">🗺️ 闯关模式</button>
+      <button onclick="openInfiniteMenu()">♾️ 无限挑战</button>
+      <button id="trainingBtn" onclick="trainingBtnClick()">🏋️ 训练营</button>
+    </div>
+    <div class="menuCol">
+      <div class="menuColTitle">📈 角色成长</div>
+      <button onclick="openCharPanel()">⭐ 主角</button>
+      <button onclick="openSkillUpgrade()">⚡ 技能升级</button>
+      <button onclick="openTalentTree()">🌳 天赋树</button>
+      <button onclick="openShop()">🛒 商城</button>
+      <button onclick="toggleBackpack()">🎒 背包</button>
+    </div>
+    <div class="menuCol">
+      <div class="menuColTitle">🧭 查询与设置</div>
+      <button onclick="openCodex()">📖 图鉴</button>
+      <button onclick="openAchievements()">🏆 成就</button>
+      <button onclick="openAccountPanel()">👤 账户信息</button>
+      <button onclick="openSettings()">⚙️ 设置</button>
+      <button class="menuLogout" onclick="logoutToLogin()">🚪 退出登录</button>
+    </div>
+  </div>
+  <div class="menuHint">序章 · 伊莉大陆</div>
+</div>
+
+<!-- V5.0 角色选择界面 -->
+<div id="select">
+  <h1>⚔️ 选择你的角色</h1>
+  <div class="charCards">
+    <div class="charCard" id="card_miaocuijiao_cat" onclick="selectCharacter('miaocuijiao_cat')">
+      <img src="assets/players/miaocuijiao_cat/sprites/miaocat_idle.png" alt="妙脆角猫">
+      <div class="charName">妙脆角猫</div>
+      <div class="charDesc">远程 · 机动 · 妙脆角回血</div>
+      <div class="charSkills">🐾普攻 / 🌽E回复 / 💥Q爆炸火箭 / 🚀R火箭雨</div>
+    </div>
+    <div class="charCard" id="card_daodungou" onclick="selectCharacter('daodungou')">
+      <img src="assets/players/daodungou/sprites/daodungou_idle.png" alt="刀盾狗">
+      <div class="charName">刀盾狗</div>
+      <div class="charDesc">近战 · 坦克 · 举盾格挡</div>
+      <div class="charSkills">🗡️普攻 / 🛡️E护盾 / 🌀Q旋风斩 / 🌪️R龙卷风</div>
+    </div>
+  </div>
+  <button id="startBtn" disabled onclick="startGame()">开始游戏</button>
+</div>
+
+<div id="game">
+  <div id="info"></div>
+  <div id="enemy"></div>
+  <img id="player" src="assets/players/miaocuijiao_cat/sprites/miaocat_idle.png">
+  <div id="hpBox">
+    <div id="hpBar"><div id="hpFill"></div></div>
+    <div id="hpText">HP:60</div>
+  </div>
+  <img id="frog">
+  <div id="wave"></div>
+</div>
+
+<audio id="attackSound" src="assets/audio/players/miaocuijiao_cat/attack.wav"></audio>
+<audio id="rocketExplosionSound" src="assets/audio/players/miaocuijiao_cat/rocket_explosion.wav"></audio>
+<audio id="hurtSound" src="assets/audio/players/miaocuijiao_cat/hurt.wav"></audio>
+<audio id="bgmAudio" src="assets/audio/bgm/bgm.wav" loop></audio>
+<audio id="victorySound" src="assets/audio/victory.wav"></audio>
+<audio id="achievementSound" src="assets/audio/achievement.wav"></audio>
+
+<!-- V15.16 手机触屏操作（仅触屏设备显示） -->
+<div id="mobileControls">
+  <div class="mcLeft">
+    <button class="mcBtn mcMove" id="mcLeft" aria-label="向左">◀</button>
+    <button class="mcBtn mcMove" id="mcRight" aria-label="向右">▶</button>
+    <button class="mcBtn mcJump" id="mcJump" aria-label="跳跃">⤒</button>
+  </div>
+  <div class="mcRight">
+    <button class="mcBtn mcAtk" id="mcAtk" aria-label="攻击">🐾</button>
+    <button class="mcBtn mcDash" id="mcDash" aria-label="闪避">💨</button>
+    <button class="mcBtn mcSkill" id="mcE" aria-label="E技能">E</button>
+    <button class="mcBtn mcSkill" id="mcQ" aria-label="Q技能">Q</button>
+    <button class="mcBtn mcSkill mcR" id="mcR" aria-label="R大招">R</button>
+    <button class="mcBtn mcPause" id="mcPause" aria-label="暂停">⏸</button>
+  </div>
+  <div class="mcHint" id="mcHint">触屏操作已开启 · R：点一下瞄准/拖动，再点发射</div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/enemy.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/frogAI.js"></script>
+<script src="js/ui_v13.js"></script>
+<script src="js/R_RocketRain.js"></script>
+<script src="js/main.js"></script>
+<script src="js/player/DaodungouDog.js"></script>
+<script src="js/mobile.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
