@@ -4855,6 +4855,36 @@ let catBullets = [];
 
 // V1.5 Q技能 爆炸火箭
 const Q_ROCKET_IMAGE = "assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png";
+// V15.19 预加载子弹/火箭贴图 + 画布兜底：保证第一枪/第一发Q也能立即看到子弹（贴图未加载完时不显示空白）
+const BULLET_PRELOAD = new Image(); BULLET_PRELOAD.src = BULLET_IMAGE;
+const QROCKET_PRELOAD = new Image(); QROCKET_PRELOAD.src = Q_ROCKET_IMAGE;
+let _bulletFb = null, _qrocketFb = null;
+function makeBulletFallback(){
+  const cv=document.createElement('canvas'); cv.width=72; cv.height=72;
+  const c=cv.getContext('2d');
+  c.fillStyle='#ffb300'; c.beginPath(); c.ellipse(36,36,24,16,0,0,Math.PI*2); c.fill();
+  c.fillStyle='#ff6d00'; c.beginPath(); c.arc(58,36,11,0,Math.PI*2); c.fill();
+  c.fillStyle='#fff3c4'; c.beginPath(); c.arc(50,32,5,0,Math.PI*2); c.fill();
+  return cv.toDataURL('image/png');
+}
+function makeQRocketFallback(){
+  const cv=document.createElement('canvas'); cv.width=110; cv.height=80;
+  const c=cv.getContext('2d');
+  c.fillStyle='#7e57c2'; c.beginPath(); c.ellipse(55,40,38,24,0,0,Math.PI*2); c.fill();
+  c.fillStyle='#ff7043'; c.beginPath(); c.arc(88,40,14,0,Math.PI*2); c.fill();
+  c.fillStyle='#fff3c4'; c.beginPath(); c.arc(78,34,6,0,Math.PI*2); c.fill();
+  return cv.toDataURL('image/png');
+}
+function bulletImgSrc(){
+  if(BULLET_PRELOAD && BULLET_PRELOAD.complete && BULLET_PRELOAD.naturalWidth>0) return BULLET_IMAGE;
+  if(!_bulletFb) _bulletFb = makeBulletFallback();
+  return _bulletFb;
+}
+function qRocketImgSrc(){
+  if(QROCKET_PRELOAD && QROCKET_PRELOAD.complete && QROCKET_PRELOAD.naturalWidth>0) return Q_ROCKET_IMAGE;
+  if(!_qrocketFb) _qrocketFb = makeQRocketFallback();
+  return _qrocketFb;
+}
 const Q_DAMAGE = 90;
 const Q_COOLDOWN = 50000; // Q技能初始冷却50秒
 let qCooldownLeft = 0;
@@ -5127,7 +5157,7 @@ function updateQRockets(){
 function drawQRockets(){
  document.querySelectorAll('.qRocket').forEach(e=>e.remove());
  const gameEl = document.getElementById('game');
- qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=Q_ROCKET_IMAGE;img.style.position='absolute';img.style.left=r.x+'px';img.style.bottom=r.y+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);});
+ qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=qRocketImgSrc();img.style.position='absolute';img.style.left=r.x+'px';img.style.bottom=r.y+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);});
 }
 
 // V15.18 子弹/火箭发射点：与玩家同一坐标系（#game 内绝对定位），从猫的身体旁边打出
@@ -5339,7 +5369,7 @@ function drawBullets(){
     catBullets.forEach(b=>{
         let img=document.createElement("img");
         img.className="catBullet";
-        img.src=BULLET_IMAGE;
+        img.src=bulletImgSrc();
         img.style.position="absolute";
         img.style.left=b.x+"px";
         img.style.bottom=b.y+"px";
