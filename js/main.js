@@ -3423,7 +3423,7 @@ function startLevel(idx){
   if((idx+1)!==16 && window.accountRUnlocked){
     const rc0 = Math.round((typeof R_COOLDOWN!=='undefined'?R_COOLDOWN:120000) * (typeof getCdFactor==='function'?getCdFactor():1));
     rCooldownLeft=rc0; window.rCooldownLeft=rc0;
-    setTimeout(()=>{ rReady=true; rCooldownLeft=0; window.rCooldownLeft=0; }, rc0);
+    // V1.0 进场冷却由 setInterval 递减到0置 ready（暂停时冻结）
   }
   dashReady=true; dashCooldownLeft=0; window.dashCooldownLeft=0;
   window.playerAttackBuff = window.pendingAttackBuff||0; window.pendingAttackBuff = 0;
@@ -5234,11 +5234,7 @@ function releaseRAim(){
     const rc = window.trainingMode ? 3000 : (window.l15UltimateBoost ? 12000 : Math.round(R_COOLDOWN * getCdFactor())); // 训练营：冷却3秒
     rCooldownLeft=rc;
     window.rCooldownLeft=rc;
-    setTimeout(()=>{
-        rReady=true;
-        rCooldownLeft=0;
-        window.rCooldownLeft=0;
-    },rc);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结，不会提前冷却好）
 }
 
 function useRSkill(){
@@ -5252,11 +5248,12 @@ setInterval(()=>{
         if(rCooldownLeft<0) rCooldownLeft=0;
         window.rCooldownLeft=rCooldownLeft;
     }
+    if(rCooldownLeft===0 && !rReady){ rReady=true; if(window.updateRUI) window.updateRUI(); } // V1.0 减到0自动就绪
 },100);
 
 
 setInterval(()=>{ if(window.gamePaused) return; if(!window.gameStarted && !window.infiniteMode && !window.trainingMode) return; // 菜单空闲不刷新（省CPU）
- if(window.updateRUI) window.updateRUI(); if(shootCooldownLeft>0){shootCooldownLeft-=100; if(shootCooldownLeft<0)shootCooldownLeft=0; window.shootCooldownLeft=shootCooldownLeft;} if(window.healCooldownLeft>0){window.healCooldownLeft-=100; if(window.healCooldownLeft<0)window.healCooldownLeft=0;} if(qCooldownLeft>0){qCooldownLeft-=100;if(qCooldownLeft<0)qCooldownLeft=0;window.qCooldownLeft=qCooldownLeft;} },100);
+ if(window.updateRUI) window.updateRUI(); if(shootCooldownLeft>0){shootCooldownLeft-=100; if(shootCooldownLeft<0)shootCooldownLeft=0; window.shootCooldownLeft=shootCooldownLeft;} if(window.healCooldownLeft>0){window.healCooldownLeft-=100; if(window.healCooldownLeft<0)window.healCooldownLeft=0; if(window.healCooldownLeft===0 && !healSkillReady){healSkillReady=true;} } if(qCooldownLeft>0){qCooldownLeft-=100;if(qCooldownLeft<0)qCooldownLeft=0;window.qCooldownLeft=qCooldownLeft;} if(qCooldownLeft===0 && !qReady){qReady=true;} },100);
 
 // V1.2 妙脆角猫回血技能
 const HEAL_AMOUNT = 30;
@@ -5347,9 +5344,7 @@ function useHealSkill(){
     healSkillReady=false;
     const hc = window.trainingMode ? 3000 : Math.round(HEAL_COOLDOWN * getCdFactor()); // 训练营：冷却3秒
     window.healCooldownLeft = hc;
-    setTimeout(()=>{
-        healSkillReady=true;
-    }, hc);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
 }
 
 
@@ -5386,7 +5381,7 @@ function useQRocket(){
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保火箭从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
     qRockets.push({ x: getMuzzleX(face, qRocketW()), y: getMuzzleY(), dir: face, dead:false, explode:false, born: performance.now() });
-    setTimeout(()=>{qReady=true;},qc);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
 }
 
 function updateQRockets(){

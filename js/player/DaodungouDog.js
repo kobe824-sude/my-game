@@ -126,7 +126,7 @@ window.DOG = (function(){
     }
     spawnMeleeSlash(px, face);
     playSound("assets/audio/players/miaocuijiao_cat/attack.wav", 0.7);
-    setTimeout(()=>{ state.meleeReady = true; }, CFG.meleeCooldown);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
   }
 
   // 刀光：刀气光柱，紧贴狗子前缘挥下（左右对称）
@@ -172,7 +172,7 @@ window.DOG = (function(){
     playSound("assets/audio/players/miaocuijiao_cat/hurt.wav", 0.35);
     if(window.updateV13UI) window.updateV13UI();
     const sc = state.shieldCd;
-    setTimeout(()=>{ state.shieldReady = true; }, sc);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
     setTimeout(()=>{ state.shieldActive = false; }, CFG.shieldDuration + 1000*((window.inventory&&window.inventory.skillLevels&&window.inventory.skillLevels.shield)||0));
   }
 
@@ -232,7 +232,7 @@ window.DOG = (function(){
     }
     spawnQSlashFx(px, face);
     playSound("assets/audio/players/miaocuijiao_cat/attack.wav", 0.8);
-    setTimeout(()=>{ state.slashReady = true; }, state.slashCd);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
   }
 
   // Q 升级特效：三连扇形刀光 + 中心闪光 + 屏幕震动（紧贴狗子的刀，左右对称）
@@ -325,7 +325,7 @@ window.DOG = (function(){
   if(window.ultLevel && window.ultLevel() >= 5){
     if(typeof frog!=='undefined' && frog){ frog.tornadoStun = true; frog.stunned = true; setTimeout(()=>{ if(frog){ frog.tornadoStun = false; if(!frog.dead) frog.stunned = false; } }, 2000); }
   }
-    setTimeout(()=>{ state.tornadoReady = true; }, state.tornadoCd);
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
   }
 
   // 龙卷风持续伤害（绕过无敌帧，保证连续扣血）
@@ -454,15 +454,7 @@ window.DOG = (function(){
     state.tornadoReady = false;
     state.tornadoCd = Math.round(CFG.tornadoCooldown * (window.getCdFactor?window.getCdFactor():1));
     window.dogTornadoCooldownLeft = state.tornadoCd;
-    if(state.tornadoCdTimer) clearTimeout(state.tornadoCdTimer);
-    state.tornadoCdTimer = setTimeout(()=>{
-      if(!state.tornadoActive){
-        state.tornadoReady = true;
-        state.tornadoCd = 0;
-        window.dogTornadoCooldownLeft = 0;
-        if(window.updateV13UI) window.updateV13UI();
-      }
-    }, state.tornadoCd);
+    // V1.0 进场冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
     if(window.updateV13UI) window.updateV13UI();
   }
 
@@ -470,8 +462,11 @@ window.DOG = (function(){
   setInterval(()=>{
     if(window.gamePaused) return;
     if(state.meleeCd>0){ state.meleeCd-=100; if(state.meleeCd<0)state.meleeCd=0; window.dogMeleeCooldownLeft=state.meleeCd; }
+    if(state.meleeCd===0 && !state.meleeReady) state.meleeReady = true; // V1.0 减到0自动就绪
     if(state.shieldCd>0){ state.shieldCd-=100; if(state.shieldCd<0)state.shieldCd=0; window.dogShieldCooldownLeft=state.shieldCd; }
+    if(state.shieldCd===0 && !state.shieldReady) state.shieldReady = true; // V1.0 减到0自动就绪
     if(state.slashCd>0){ state.slashCd-=100; if(state.slashCd<0)state.slashCd=0; window.dogSlashCooldownLeft=state.slashCd; }
+    if(state.slashCd===0 && !state.slashReady) state.slashReady = true; // V1.0 减到0自动就绪
     if(state.tornadoCd>0){ state.tornadoCd-=100; if(state.tornadoCd<0)state.tornadoCd=0; window.dogTornadoCooldownLeft=state.tornadoCd; }
     if(state.tornadoCd===0 && !state.tornadoActive) state.tornadoReady = true; // 冷却结束，大招可再次使用
     // 盾反计时：10秒积攒结束→进入5秒缓冲；缓冲过期→能量作废，重新开始10秒
