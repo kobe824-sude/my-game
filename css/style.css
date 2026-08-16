@@ -989,7 +989,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
 .levelCard.special.unlocked{background:linear-gradient(180deg,#5fc8ff,#2f7fe8);color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.3);}
 .specialBeacon{position:absolute;bottom:96px;width:84px;height:110px;background:radial-gradient(circle at 50% 30%, #fff8c0, #ffd700 55%, rgba(255,180,0,.75));border-radius:50% 50% 26% 26%;box-shadow:0 0 30px rgba(255,215,0,.9), 0 0 60px rgba(255,215,0,.35);z-index:60;pointer-events:none;animation:beaconGlow 1.2s ease-in-out infinite;}
 @keyframes beaconGlow{0%,100%{box-shadow:0 0 24px rgba(255,215,0,.75)}50%{box-shadow:0 0 48px rgba(255,215,0,1)}}
-.specialTimer{position:absolute;top:14px;right:20px;font-size:28px;font-weight:bold;color:#ffd86b;text-shadow:2px 2px 0 #000;z-index:80;font-family:Arial,sans-serif;}
+.specialTimer{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:40px;font-weight:bold;color:#ff5b4b;text-shadow:0 0 10px #000,2px 2px 0 #000;z-index:90;font-family:Arial,sans-serif;background:rgba(0,0,0,.6);padding:2px 22px;border-radius:16px;border:2px solid #ffd86b;box-shadow:0 4px 16px #0008;}
 .specialBanner{position:absolute;top:16%;left:50%;transform:translateX(-50%);background:rgba(30,70,120,.92);border:3px solid #4fc3f7;border-radius:14px;padding:10px 24px;color:#fff;font-size:20px;font-weight:bold;z-index:85;text-align:center;box-shadow:0 6px 22px rgba(0,0,0,.45);font-family:Arial,sans-serif;white-space:nowrap;}
 #specialBeaconHp{position:absolute;bottom:214px;left:50%;transform:translateX(-50%);height:10px;background:linear-gradient(90deg,#ffd700,#ffaa00);border-radius:6px;z-index:62;border:2px solid rgba(0,0,0,.35);}
 

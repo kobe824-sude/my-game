@@ -944,7 +944,7 @@ const LEVELS = [
   { level:4, name:"第4关·奶蛙群", scene:"grass", enemies:[ {hp:150, x:0.55}, {hp:150, x:0.75}, {hp:150, x:0.92} ] },
   { level:5, name:"第5关·精英奶蛙", scene:"grass", flag:"elite", enemies:[ {type:"elite", hp:300, x:0.85}, {hp:138, x:0.6} ] },
   { level:6, name:"第6关·草原深处", scene:"grass", enemies:[ {hp:156, x:0.55}, {hp:156, x:0.75}, {hp:156, x:0.92} ] },
-  { level:7, name:"第7关·草原疾风", scene:"grass", flag:"special", mode:"timed", special:{ timer:25 }, enemies:[ {hp:80, x:0.5}, {hp:80, x:0.6}, {hp:80, x:0.7}, {hp:80, x:0.8}, {hp:80, x:0.9} ] },
+  { level:7, name:"第7关·草原疾风", scene:"grass", flag:"special", mode:"timed", special:{ timer:60 }, enemies:[ {hp:80, x:0.5}, {hp:80, x:0.6}, {hp:80, x:0.7}, {hp:80, x:0.8}, {hp:80, x:0.9} ] },
   { level:8, name:"第8关·精英双蛙", scene:"grass", flag:"elite", enemies:[ {type:"elite", hp:336, x:0.88}, {hp:132, x:0.6}, {hp:132, x:0.75} ] },
   { level:9, name:"第9关·奶鼠出没", scene:"grass", enemies:[ {type:"mouse", hp:110, x:0.55}, {type:"mouse", hp:110, x:0.72}, {hp:150, x:0.9} ] },
   { level:10, name:"第10关·精英奶鼠", scene:"grass", flag:"elite", enemies:[ {type:"mouse", elite:true, hp:500, x:0.85}, {type:"mouse", hp:130, x:0.62}, {hp:160, x:0.92} ] },
@@ -2576,7 +2576,10 @@ function initSpecialLevel(idx){
   const cfg = LEVELS[idx];
   if(!cfg || !cfg.mode) return;
   if(cfg.mode === 'timed'){
-    const secs = (cfg.special && cfg.special.timer) || 25;
+    // V15.20 限时关按难度调整时间：躺平×1.5 / 普通×1 / 困难×0.75 / 噩梦×0.6（越难时间越短）
+    const d0 = (window.gameSettings && window.gameSettings.diffMode) || 'normal';
+    const tMult = { easy:1.5, normal:1, hard:0.75, nightmare:0.6 }[d0] || 1;
+    const secs = Math.max(10, Math.round(((cfg.special && cfg.special.timer) || 60) * tMult));
     window.specialState = { mode:'timed', deadline: Date.now() + secs*1000, total: secs };
     showSpecialBanner('⏱ 特殊关·限时清怪：' + secs + ' 秒内清完所有怪物！');
   } else if(cfg.mode === 'beacon'){
@@ -3919,15 +3922,9 @@ function checkLevelClear(){
       if(typeof renderGuideIcon==='function') renderGuideIcon();
     }
     // 剧情解锁：通关第5关获得E技能，通关第10关获得Q技能（R大招在第16关由宗主救场时传授）
-    if((currentLevel+1) === 5 && !window.accountEUnlocked){
-      window.accountEUnlocked = true;
-      if(typeof showSkillUnlockPopup==='function') showSkillUnlockPopup('E 技能 · '+(activeCharacter==='daodungou'?'举盾护盾':'妙脆角回血'));
-    }
-    if((currentLevel+1) === 10 && !window.accountQUnlocked){
-      window.accountQUnlocked = true;
-      window.accountTrainingUnlocked = true; // 获得Q技能的同时解锁训练营
-      showSkillUnlockPopup("Q 技能 · 爆炸火箭（训练营已解锁！）");
-    }
+    // V15.20 E/Q解锁提示已改到进入关卡时弹出（此处不再重复弹窗，仅兜底标记）
+    if((currentLevel+1) === 5 && !window.accountEUnlocked){ window.accountEUnlocked = true; }
+    if((currentLevel+1) === 10 && !window.accountQUnlocked){ window.accountQUnlocked = true; window.accountTrainingUnlocked = true; }
     // 通关成就
     if((currentLevel+1) === 1 && typeof unlockAchievement==='function') unlockAchievement('first_blood');
     if((currentLevel+1) === 5 && typeof unlockAchievement==='function') unlockAchievement('lv5');
@@ -4002,8 +3999,7 @@ function damageEnemy(e, dmg){
   e.img.style.filter = "brightness(2.6)";
   setTimeout(()=>{ if(e.img) e.img.style.filter=""; },120);
   if(e.hp === 0){ enemyDeath(e); return; }
-  e.state="HURT"; e.stunned=true;
-  e.img.src = enemyImgSrc(e,'hurt');
+  if(e.state !== 'HURT'){ e.state="HURT"; e.stunned=true; if(e.img) e.img.src = enemyImgSrc(e,'hurt'); }
   // 奶蛙受击叫声同样受「奶蛙笑声」开关控制：关闭后奶蛙不再发出任何叫声（攻击/受击都不叫）
   const laughOn = !window.gameSettings || window.gameSettings.frogLaugh !== false;
   if(hurtSound && !hurtSoundCooldown && laughOn){
@@ -4012,13 +4008,17 @@ function damageEnemy(e, dmg){
     hurtSound.play().catch(()=>{});
     setTimeout(()=>{ hurtSoundCooldown=false; },900);
   }
-  setTimeout(()=>{
-    if(!e.dead){
-      e.stunned=false;
-      e.state="RECOVER";
-      if(e.img) e.img.src = enemyImgSrc(e,'walk');
-    }
-  }, CONFIG.HURT_TIME);
+  // V15.20 受击恢复：不因连续受击反复重置，保证500ms后一定能切回正常贴图
+  if(!e.hurtTimer){
+    e.hurtTimer = setTimeout(()=>{
+      e.hurtTimer=null;
+      if(!e.dead){
+        e.stunned=false;
+        e.state="RECOVER";
+        if(e.img) e.img.src = enemyImgSrc(e,'walk');
+      }
+    }, CONFIG.HURT_TIME);
+  }
 }
 // 兼容旧代码：对最近目标造成伤害
 function frogTakeDamage(dmg){ if(frog) damageEnemy(frog, dmg); }
@@ -4553,6 +4553,18 @@ function enterLevel(idx, mode){
   // V15.20 每关加载：先等本关资源就绪（进度条），再开始打
   showLevelLoad(idx, function(){
     startLevel(idx);
+    // V15.20 技能解锁提示：首次进入该关（技能首次可用）就提示，而不是通关后才提示
+    if(!window.infiniteMode && !window.trainingMode){
+      if(!window.accountEUnlocked && (idx+1)===5){
+        window.accountEUnlocked = true;
+        setTimeout(function(){ if(typeof showSkillUnlockPopup==='function') showSkillUnlockPopup('E 技能 · '+(activeCharacter==='daodungou'?'举盾护盾':'妙脆角回血')); }, 600);
+      }
+      if(!window.accountQUnlocked && (idx+1)===10){
+        window.accountQUnlocked = true;
+        window.accountTrainingUnlocked = true;
+        setTimeout(function(){ if(typeof showSkillUnlockPopup==='function') showSkillUnlockPopup('Q 技能 · 爆炸火箭（训练营已解锁！）'); }, 600);
+      }
+    }
     syncPlayerHpBox();
     if(window.updateV13UI) window.updateV13UI();
     // 战斗状态背景音乐开关 + 第15关Boss战BGM（startLevel 后 currentLevel 已更新）
@@ -5058,10 +5070,13 @@ function useHealSkill(){
     window.miaocatCorn=miaocatCorn;
     window.miaocat.horns=miaocatCorn;
 
-    playerHp = Math.min(playerMaxHp, playerHp + HEAL_AMOUNT);
+    // V15.20 E回血随技能升级：基础10 + 每级+10，10级效果大增
+    const healLv = (inventory.skillLevels && inventory.skillLevels.heal) || 0;
+    const healAmt = 10 + healLv * 10 + (healLv >= 10 ? 30 : 0);
+    playerHp = Math.min(playerMaxHp, playerHp + healAmt);
     window.playerHp=playerHp;
     updatePlayerHP();
-    showHealText(HEAL_AMOUNT, enemyObj);
+    showHealText(healAmt, enemyObj);
 
     // 同步妙脆角资源UI
     updateCornSprite();
