@@ -11,9 +11,24 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/ui/icon-192.png">
 <link rel="icon" type="image/png" href="assets/ui/icon-192.png">
+<link rel="preload" as="image" href="assets/ui/bg_scene.png">
+<link rel="preload" as="image" href="assets/ui/bg_boss1.png">
+<link rel="preload" as="image" href="assets/players/miaocuijiao_cat/sprites/miaocat_idle.png">
+<link rel="preload" as="image" href="assets/players/daodungou/sprites/daodungou_idle.png">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="loadingScreen"><div class="loadingBox">🐱 妙脆角猫与刀盾狗 🐶<div class="loadingBar"><div class="loadingFill"></div></div><div class="loadingText">正在加载，请稍候…</div></div></div>
+<script>
+(function(){
+  var ls=document.getElementById('loadingScreen');
+  var minShown=Date.now()+500;
+  function hide(){ if(ls && ls.parentNode){ ls.classList.add('hide'); setTimeout(function(){ ls.remove(); },450); } }
+  function done(){ if(Date.now()<minShown){ setTimeout(done, minShown-Date.now()); return; } hide(); }
+  if(document.readyState==='complete'){ done(); }
+  else { window.addEventListener('load', done); setTimeout(hide, 3500); }
+})();
+</script>
 
 <!-- V5.9 登录 -->
 <div id="login">

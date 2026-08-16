@@ -1307,11 +1307,23 @@ function toggleFullscreen(){
   }
 }
 window.toggleFullscreen = toggleFullscreen;
-// 浏览器默认按ESC会退出全屏：这里检测到被退出时，若仍要求全屏（设置里开的）就立即重新进入——只有设置按钮能退出全屏
+// V15.18 全屏+Esc修复：关卡内按Esc应呼出暂停/退出菜单，不再被"强制回全屏"困住
+// - 主菜单/设置界面：保持全屏（只有设置按钮能退出全屏）
+// - 关卡内：允许浏览器退出全屏，并自动打开暂停菜单，避免死循环无法退出
 if(typeof document.addEventListener==='function'){
   document.addEventListener('fullscreenchange', ()=>{
-    if(window.forceFullscreen && !document.fullscreenElement && document.documentElement && document.documentElement.requestFullscreen){
-      document.documentElement.requestFullscreen().catch(()=>{});
+    if(window.forceFullscreen && !document.fullscreenElement){
+      const inLevel = !!window.gameStarted; // 进入关卡（含暂停/结算）后视为关卡内
+      if(inLevel){
+        // 关卡内：Esc已被浏览器用于退出全屏 → 不再强制回全屏，改呼出暂停菜单
+        window.forceFullscreen = false;
+        if(!window.gameEnded && !window.playerDead && typeof togglePause==='function'){
+          try{ togglePause(); }catch(e){}
+        }
+      } else if(document.documentElement && document.documentElement.requestFullscreen){
+        // 主菜单/设置界面：保持全屏（只有设置按钮能退出全屏）
+        document.documentElement.requestFullscreen().catch(()=>{});
+      }
     }
   });
 }
@@ -5038,21 +5050,25 @@ function useQRocket(){
     qCooldownLeft=qc;
     window.qCooldownLeft=qc;
     const face=window.miaoCatFace||1;
-    qRockets.push({x:enemy.x+(face>0?50:-20),y:playerY-10,dir:face,dead:false,explode:false});
+    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false });
     setTimeout(()=>{qReady=true;},qc);
 }
 
 function updateQRockets(){
+ const gameEl = document.getElementById('game');
+ const gr = gameEl ? gameEl.getBoundingClientRect() : { left:0, top:0, height: window.innerHeight };
  qRockets.forEach(r=>{
    r.x += r.dir*3.6;
 
    // V1.5.2 Q火箭碰撞修复：
    // 火箭本体使用小碰撞箱，不再使用大范围X轴判断
+   const rScreenLeft = gr.left + r.x;
+   const rScreenTop = gr.top + gr.height - r.y - 80;
    const rocketHitbox = {
-      left: r.x + 18,
-      right: r.x + 55,
-      top: (window.innerHeight-180+r.y) + 18,
-      bottom: (window.innerHeight-180+r.y) + 55
+      left: rScreenLeft + 18,
+      right: rScreenLeft + 55,
+      top: rScreenTop + 18,
+      bottom: rScreenTop + 55
    };
 
    // 命中检测：遍历所有存活敌人（Boss也能被打到），取第一个被火箭碰到/爆炸范围内的
@@ -5077,7 +5093,7 @@ function updateQRockets(){
       // 爆炸伤害范围单独处理（150px）
       const explosionRange = 260; // 大Boss也能被炸到
       const frogCenterX = hitEnemy.img.getBoundingClientRect().left + hitEnemy.img.getBoundingClientRect().width/2;
-      const rocketCenterX = r.x + 35;
+      const rocketCenterX = rScreenLeft + 35;
 
       if(Math.abs(frogCenterX - rocketCenterX) <= explosionRange){
           const qDmg = doCrit((Q_DAMAGE + (window.playerAttackBuff||0)) * (1 + 0.05*((inventory.skillLevels&&(inventory.skillLevels.skillQ||inventory.skillLevels.skill))||0)));
@@ -5108,9 +5124,19 @@ function updateQRockets(){
 
 function drawQRockets(){
  document.querySelectorAll('.qRocket').forEach(e=>e.remove());
- qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=Q_ROCKET_IMAGE;img.style.position='fixed';img.style.left=r.x+'px';img.style.top=(window.innerHeight-180+r.y)+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';document.body.appendChild(img);});
+ const gameEl = document.getElementById('game');
+ qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=Q_ROCKET_IMAGE;img.style.position='absolute';img.style.left=r.x+'px';img.style.bottom=r.y+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);});
 }
 
+// V15.18 子弹/火箭发射点：与玩家同一坐标系（#game 内绝对定位），从猫的身体旁边打出
+// 玩家渲染: left=enemy.x, bottom=100-playerY → 子弹/火箭也用相同基准，杜绝任何坐标偏移
+function getMuzzleX(face, w){
+  const inset = Math.min(24, Math.round(w*0.3));
+  return enemy.x + (face > 0 ? (100 - inset) : -(w - inset));
+}
+function getMuzzleY(){
+  return (100 - playerY) + 20;
+}
 function shootBullet(){
     if(playerDead || (frog && frog.dead) || gameEnded || !canShoot) return; // frog 可能为空（切换/过渡时），防空引用
 
@@ -5126,12 +5152,7 @@ function shootBullet(){
 
     window.miaoCatFace = playerFace;
 
-    catBullets.push({
-        x: enemy.x + (playerFace === -1 ? -20 : 50),
-        y: playerY - 10,
-        dir: playerFace,
-        dead:false
-    });
+    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false });
 
     setTimeout(()=>{
         canShoot=true;
@@ -5147,7 +5168,9 @@ window.addEventListener("mousedown",(e)=>{
       const tag = t && t.tagName ? t.tagName.toUpperCase() : '';
       const onForm = tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT' || tag==='BUTTON' || tag==='LABEL' ||
         !!(t && t.closest && t.closest('input,textarea,select,button,label'));
-      if(!onForm){ e.preventDefault(); } // 防止点出图片选中/拖到书签
+      // V15.18 点击按钮/触控键/输入框等控件时不发射普攻（防止触屏合成mousedown导致双发/误发）
+      if(onForm){ return; }
+      e.preventDefault(); // 防止点出图片选中/拖到书签
     }
     if(window.gamePaused) return;
     if(e.button===0 && window.gameStarted){
@@ -5275,16 +5298,20 @@ setInterval(()=>{
 function updateBullets(){
     if(!frogImg) return;
     updateQRockets();
+    const gameEl = document.getElementById('game');
+    const gr = gameEl ? gameEl.getBoundingClientRect() : { left:0, top:0, height: window.innerHeight };
     catBullets.forEach(b=>{
         b.x += b.dir * BULLET_SPEED;
 
         // V1.1.3: 子弹独立小范围碰撞箱，不受大贴图影响
         const frogRect = frogImg.getBoundingClientRect();
+        const bScreenLeft = gr.left + b.x;
+        const bScreenTop = gr.top + gr.height - b.y - 72;
         const hitbox = {
-            left: b.x + 12,
-            right: b.x + 44,
-            top: (window.innerHeight-180+b.y) + 12,
-            bottom: (window.innerHeight-180+b.y) + 44
+            left: bScreenLeft + 12,
+            right: bScreenLeft + 44,
+            top: bScreenTop + 12,
+            bottom: bScreenTop + 44
         };
         if(typeof window.tryBreakBreakables==='function'){ tryBreakBreakables(12 + (charLevel()-1), b.x, 55); }
         if(frog && !frog.dead &&
@@ -5303,18 +5330,19 @@ function updateBullets(){
 function drawBullets(){
     drawQRockets();
     document.querySelectorAll(".catBullet").forEach(e=>e.remove());
+    const gameEl = document.getElementById('game');
 
     catBullets.forEach(b=>{
         let img=document.createElement("img");
         img.className="catBullet";
         img.src=BULLET_IMAGE;
-        img.style.position="fixed";
+        img.style.position="absolute";
         img.style.left=b.x+"px";
-        img.style.top=(window.innerHeight-180+b.y)+"px";
+        img.style.bottom=b.y+"px";
         img.style.width="72px";
         img.style.transform = "scaleX(" + (b.dir>0?1:-1) + ")"; // 朝左发射时子弹图片也跟着朝左
         img.style.height="72px";
-        document.body.appendChild(img);
+        (gameEl||document.body).appendChild(img);
     });
 }
 
