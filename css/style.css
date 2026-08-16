@@ -11,6 +11,10 @@ background:#6ca35a;
 
 font-family:Arial;
 
+touch-action:manipulation;
+
+-webkit-tap-highlight-color:transparent;
+
 }
 
 
@@ -61,7 +65,11 @@ width:100vw;
 
 height:100vh;
 
+height:100dvh; /* V1.10 手机浏览器动态视口高度：地址栏收起时不被截断 */
+
 overflow:hidden;
+
+touch-action:none; /* V1.10 禁止双击/双指缩放影响战斗 */
 
 }
 
@@ -1079,6 +1087,29 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* ===================== V15.16 手机触屏操作 ===================== */
 #mobileControls{display:none;position:fixed;inset:0;z-index:150;pointer-events:none;touch-action:none;font-family:Arial,sans-serif;}
 
+
+/* ========== V1.10 手机端：禁止双击缩放 + 选角卡片不溢出 + 主菜单适配小屏 ========== */
+html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
+#game,#mobileControls{touch-action:none;} /* 游戏区域完全禁用浏览器手势缩放 */
+@media (pointer:coarse){
+  #select h1{font-size:26px;margin:0 0 14px;}
+  .charCards{gap:10px;margin-bottom:16px;}
+  .charCard{width:42vw;max-width:150px;padding:10px 6px 10px;}
+  .charCard img{width:26vw;max-width:92px;height:auto;}
+  .charName{font-size:17px;margin:6px 0 2px;}
+  .charDesc{font-size:11px;line-height:1.3;margin-bottom:4px;}
+  .charSkills{font-size:10px;line-height:1.3;}
+  #startBtn{font-size:18px;padding:10px 40px;}
+  #mainMenu{padding:10px;gap:8px;justify-content:flex-start;}
+  #mainMenu h1{font-size:30px;margin-top:6px;}
+  #mainMenu .menuSub{font-size:14px;margin-top:2px;}
+  .menuCols{gap:12px;padding:12px 10px 14px;max-width:96vw;}
+  .menuCol{min-width:0;width:47vw;gap:7px;}
+  .menuCol button{width:100%;font-size:14px;padding:9px 6px;}
+  .menuColTitle{font-size:13px;letter-spacing:2px;}
+  .menuLogout{width:100% !important;font-size:14px !important;padding:9px 6px !important;}
+  #mainMenu .menuHint{font-size:11px;}
+}
 /* ========== V1.7 手机UI：卡通圆形 + 扇形布局 ========== */
 @media (pointer:coarse){
   #mobileControls{display:flex;}

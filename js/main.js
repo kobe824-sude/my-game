@@ -103,8 +103,8 @@ const RETREAT_DISTANCE=220;
 const SPEED=0.4;
 
 // V1.1 战斗区域边界
-const WORLD_LEFT=0;
-const WORLD_RIGHT=window.innerWidth-80;
+let WORLD_LEFT=0;
+let WORLD_RIGHT=window.innerWidth-80; // V1.10 改为 let：旋转/全屏/地址栏变化时由 reflowGameViewport 更新
 
 
 
@@ -2136,6 +2136,8 @@ function spawnSolids(){
   solidObjects.forEach(s=>{ if(s.el && s.el.parentNode) s.el.parentNode.removeChild(s.el); });
   solidObjects = [];
   const cfg = LEVELS[currentLevel];
+  // V1.9 手机端哨塔/建筑/箱子缩小（屏幕小，太高的塔会超出屏幕）
+  const mS = ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.6 : 1;
   if(!cfg) return;
   // Boss关（15关）：不生成障碍物，避免挡视线
   if((currentLevel+1) === 16){ return; }
@@ -2145,11 +2147,11 @@ function spawnSolids(){
   const crateCount = 1 + (currentLevel % 2);
   for(let i=0;i<crateCount;i++){
     const x = window.innerWidth * (0.62 + i*0.1);
-    addSolid(x, 52, 52, steel ? 'steel' : 'wood', true);
+    addSolid(x, Math.round(52*mS), Math.round(52*mS), steel ? 'steel' : 'wood', true);
   }
   // 爆炸箱（第13关起，打碎会爆炸）
   if(explosive){
-    addSolid(window.innerWidth * 0.55, 52, 52, 'explosive', true);
+    addSolid(window.innerWidth * 0.55, Math.round(52*mS), Math.round(52*mS), 'explosive', true);
   }
   // 哨塔（第6关起）：随机出现，但每3关必出1座；塔顶自动站一名守卫；没出塔时放一个普通建筑
   if((currentLevel+1) >= 6){
@@ -2157,13 +2159,13 @@ function spawnSolids(){
     const hasTower = needTower || Math.random() < 0.45;
     if(hasTower){
       const towerX = window.innerWidth * (0.72 + Math.random()*0.12);
-      addSolid(towerX, 120, 390, 'tower', true);
+      addSolid(towerX, Math.round(120*mS), Math.round(390*mS), 'tower', true);
       const t = solidObjects[solidObjects.length-1];
       spawnTowerGuard(t);
       window.towerStreak = 0;
     } else {
       window.towerStreak = (window.towerStreak||0) + 1;
-      addSolid(window.innerWidth * 0.7, 140, 80, 'building', false);
+      addSolid(window.innerWidth * 0.7, Math.round(140*mS), Math.round(80*mS), 'building', false);
     }
   } else {
     addSolid(window.innerWidth * 0.7, 140, 80, 'building', false);
@@ -4267,9 +4269,20 @@ function clampOutOfSolids(e){
     const sL = s.x - s.w/2, sR = s.x + s.w/2;
     if(e.x > sL && e.x < sR && (e.groundY||0) < s.topY - 4){
       // 只有真正卡在建筑内部才推出去（贴边不算），避免原地踏步
-      e.x = (e.x < s.x) ? (sL - ew*0.35) : (sR + ew*0.35);
+      // V1.10 推出方向优先选屏幕内一侧：手机窄屏下右侧空间不足时推回左侧，避免被推出屏外
+      const wantLeft = (e.x < s.x);
+      const leftX = sL - ew*0.35, rightX = sR + ew*0.35;
+      const leftFits = leftX >= 0, rightFits = rightX <= window.innerWidth - ew;
+      if(wantLeft ? (leftFits || !rightFits) : (!rightFits && leftFits)){
+        e.x = leftX;
+      } else {
+        e.x = rightX;
+      }
     }
   }
+  // V1.10 推出障碍后再次夹紧到屏幕内：防止被建筑推出屏幕外（手机端“东西看不见”）
+  if(e.x > window.innerWidth - ew) e.x = Math.max(0, window.innerWidth - ew);
+  if(e.x < 0) e.x = 0;
 }
 
 // 敌人 AI（多敌人版，每帧对每个敌人执行）
@@ -4296,6 +4309,10 @@ function updateEnemyAI(e){
     if(dx > 0){ e.face = 1; e.img.style.transform = "scaleX(-1)"; }
     else { e.face = -1; e.img.style.transform = "scaleX(1)"; }
     if(distance <= ATTACK_RANGE && !e.attacking && !e.cooldown && e.state!=="HURT" && e.state!=="RETREAT"){ startAttack(e); }
+    // V1.10 塔上守卫也夹紧到屏幕内（手机窄屏下哨塔靠右时守卫不会出屏）
+    const tgw = e.img ? e.img.clientWidth : 120;
+    if(e.x > window.innerWidth - tgw) e.x = Math.max(0, window.innerWidth - tgw);
+    if(e.x < 0) e.x = 0;
     e.img.style.left = e.x + "px";
     updateEnemyJump(e);
     followEnemyHp(e);
@@ -5835,6 +5852,64 @@ function followPlayerHP(){
     hpBox.style.left=(rect.left+rect.width/2-50)+"px";
     hpBox.style.top=(rect.top-55)+"px";
     hpBox.style.position="fixed";
+}
+
+
+// =====================
+// V1.10 手机端视口自适应：旋转 / 全屏 / 地址栏收起时重新夹紧所有实体，避免“看不见/跑到屏幕外”
+// =====================
+function reflowGameViewport(){
+  var w = window.innerWidth || document.documentElement.clientWidth || 390;
+  var h = window.innerHeight || document.documentElement.clientHeight || 844;
+  WORLD_RIGHT = Math.max(200, w - 80);
+  // 主角
+  if(typeof enemy !== 'undefined' && enemy){
+    if(enemy.x > WORLD_RIGHT) enemy.x = WORLD_RIGHT;
+    if(enemy.x < WORLD_LEFT) enemy.x = WORLD_LEFT;
+    if(typeof enemyObj !== 'undefined' && enemyObj) enemyObj.style.left = enemy.x + "px";
+  }
+  // 所有敌人
+  if(typeof enemies !== 'undefined' && Array.isArray(enemies)){
+    for(var i=0;i<enemies.length;i++){
+      var e = enemies[i];
+      if(!e) continue;
+      var ew = (e.img && e.img.clientWidth) ? e.img.clientWidth : 100;
+      if(e.x > w - ew) e.x = Math.max(0, w - ew);
+      if(e.x < 0) e.x = 0;
+      if(e.img) e.img.style.left = e.x + "px";
+    }
+  }
+  // 障碍物（箱子/哨塔/建筑）：按比例重排，避免被切出屏幕
+  if(typeof solidObjects !== 'undefined' && Array.isArray(solidObjects)){
+    for(var j=0;j<solidObjects.length;j++){
+      var s = solidObjects[j];
+      if(!s || !s.el) continue;
+      var half = s.w/2;
+      var maxX = w - half;
+      if(s.x > maxX) s.x = Math.max(half, maxX);
+      if(s.x < half) s.x = half;
+      s.el.style.left = (s.x - half) + "px";
+    }
+  }
+  // R 大招目标点（红圈）
+  if(window.RRocketRain && window.RRocketRain.targetX !== undefined){
+    window.RRocketRain.targetX = Math.max(100, Math.min(w-100, window.RRocketRain.targetX));
+    if(window.RRocketRain.updateWarning) window.RRocketRain.updateWarning();
+  }
+  // 战斗提示横幅等绝对定位元素保持在屏内
+  var b = document.getElementById('levelBanner');
+  if(b){ b.style.left = "50%"; b.style.transform = "translateX(-50%)"; }
+}
+window.reflowGameViewport = reflowGameViewport;
+// V1.10 视口变化（含手机全屏）时自动重排；用 setTimeout 等浏览器完成布局切换
+function _reflowDebounced(){ setTimeout(function(){ try{ reflowGameViewport(); }catch(e){} }, 60); }
+if(typeof window.addEventListener==='function'){
+  window.addEventListener('resize', _reflowDebounced);
+  window.addEventListener('orientationchange', _reflowDebounced);
+  window.addEventListener('fullscreenchange', _reflowDebounced);
+  if(window.visualViewport && window.visualViewport.addEventListener){
+    try{ window.visualViewport.addEventListener('resize', _reflowDebounced); }catch(e){}
+  }
 }
 
 function update(){

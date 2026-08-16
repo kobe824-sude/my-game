@@ -3,6 +3,31 @@
   function isTouch(){ return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0); }
   if(!isTouch()) return; // 非触屏设备：按钮由 CSS 隐藏，无需绑定
 
+  // ========== V1.10 禁止双击/双指缩放：战斗中双击会缩放页面，严重影响操作 ==========
+  var _lastTapT = 0, _lastTapX = 0, _lastTapY = 0;
+  function _blockZoom(ev){
+    try{ ev.preventDefault(); ev.stopPropagation(); }catch(e){}
+  }
+  // iOS Safari：手势（捏合）缩放
+  document.addEventListener('gesturestart', _blockZoom, {passive:false});
+  document.addEventListener('gesturechange', _blockZoom, {passive:false});
+  document.addEventListener('gestureend', _blockZoom, {passive:false});
+  // 双击缩放：350ms 内第二次点击同一位置 → 阻止
+  document.addEventListener('touchend', function(ev){
+    var now = Date.now();
+    var t = ev.changedTouches && ev.changedTouches[0];
+    if(t && now - _lastTapT < 350 && Math.abs(t.clientX - _lastTapX) < 60 && Math.abs(t.clientY - _lastTapY) < 60){
+      ev.preventDefault();
+    }
+    if(t){ _lastTapT = now; _lastTapX = t.clientX; _lastTapY = t.clientY; }
+  }, {passive:false});
+  // dblclick（部分安卓浏览器仍会触发双击缩放）
+  document.addEventListener('dblclick', _blockZoom, {passive:false});
+  // 多指触摸（捏合）直接阻止默认
+  document.addEventListener('touchstart', function(ev){
+    if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); }
+  }, {passive:false});
+
   var $=function(id){ return document.getElementById(id); };
   var L=$('mcLeft'), R=$('mcRight'), J=$('mcJump'), A=$('mcAtk'), D=$('mcDash'), E=$('mcE'), Q=$('mcQ'), Rbtn=$('mcR'), P=$('mcPause');
   // V1.4 手机控制区禁止右键菜单（否则长按移动键会触发右键→冲刺）
