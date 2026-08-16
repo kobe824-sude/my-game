@@ -3648,6 +3648,7 @@ window.showCharacterSelect = showCharacterSelect;
 function showLeaderboard(){
   const el = document.getElementById('infiniteMenu'); if(el) el.remove();
   const colors = ['#ffd700','#4fc3f7','#81c784','#dff3ff','#dff3ff','#dff3ff','#dff3ff','#dff3ff'];
+  // V1.19 云端共享：先显示本机，再异步用云端数据刷新（所有玩家记录）
   const col = (d)=>{
     const board = loadInfiniteBoard(d).sort((a,b)=> (b.wave - a.wave) || (b.gold - a.gold)).slice(0, 8);
     const rows = board.length
@@ -3655,6 +3656,18 @@ function showLeaderboard(){
       : '<div class="rankRow">暂无记录</div>';
     return '<div class="lbCol"><div class="lbColTitle">'+INFINITE_DIFF_NAMES[d]+'</div>'+rows+'</div>';
   };
+  // 异步从云端拉取并刷新四个难度（失败则保留本机记录）
+  INFINITE_DIFFS.forEach(d=>{
+    cloudFetchBoard(d).then(cb=>{
+      if(!cb || !cb.length) return;
+      try{ localStorage.setItem('milkfrog_infinite_leaderboard_'+d, JSON.stringify(cb)); }catch(e){}
+      const lb = document.getElementById('infiniteLeaderboard');
+      if(lb){
+        const grid = lb.querySelector('.lbGrid');
+        if(grid) grid.innerHTML = INFINITE_DIFFS.map(x=>col(x)).join('');
+      }
+    });
+  });
   const ov = document.createElement('div');
   ov.id = 'infiniteLeaderboard';
   ov.innerHTML = '<div class="infiniteCard lbCard">' +
@@ -3910,6 +3923,40 @@ function currentInfiniteDiff(){
   return (window.gameSettings && window.gameSettings.diffMode) || 'normal';
 }
 window.currentInfiniteDiff = currentInfiniteDiff;
+// ===================== V1.19 云端共享排行榜（Supabase） =====================
+// 玩家A/B/C的记录全部上传云端，任何设备的玩家都能看到所有人的记录
+function supabaseOn(){ return !!(window.SUPABASE_URL && window.SUPABASE_ANON_KEY); }
+// 上传一条记录到云端（按 昵称+难度 去重，保留最高分）
+function cloudPushScore(diff, name, wave, gold, avatar){
+  if(!supabaseOn()) return Promise.resolve(null);
+  const url = window.SUPABASE_URL.replace(/\/$/,'');
+  return fetch(url + '/rest/v1/infinite_leaderboard', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': window.SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
+      'Prefer': 'resolution=merge-duplicates,return=minimal'
+    },
+    body: JSON.stringify({
+      name: name, wave: wave, gold: gold, avatar: (avatar||'').slice(0, 2000), difficulty: diff
+    })
+  }).then(r=>{ if(!r.ok) throw new Error('supabase push '+r.status); return true; }).catch(e=>{ console.warn('云端上传失败(不影响本地)：', e.message); return null; });
+}
+// 从云端拉取某难度的排行榜（前8，按波次/金币降序）
+function cloudFetchBoard(diff){
+  if(!supabaseOn()) return Promise.resolve(null);
+  const url = window.SUPABASE_URL.replace(/\/$/,'');
+  return fetch(url + '/rest/v1/infinite_leaderboard?difficulty=eq.' + encodeURIComponent(diff) + '&select=name,wave,gold,avatar&order=wave.desc,gold.desc&limit=8', {
+    method: 'GET',
+    headers: {
+      'apikey': window.SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY
+    }
+  }).then(r=>{ if(!r.ok) throw new Error('supabase fetch '+r.status); return r.json(); })
+    .then(rows=> Array.isArray(rows) ? rows.map(r=>({name:r.name, wave:r.wave||0, gold:r.gold||0, avatar:r.avatar||''})) : null)
+    .catch(e=>{ console.warn('云端拉取失败(显示本机记录)：', e.message); return null; });
+}
 function loadInfiniteBoard(diff){
   const d = diff || currentInfiniteDiff();
   let board = [];
@@ -3938,6 +3985,8 @@ function recordInfiniteScore(waves, gold){
   board.sort((a,b)=> (b.wave - a.wave) || (b.gold - a.gold));
   const top = board.slice(0, 8);
   try{ localStorage.setItem('milkfrog_infinite_leaderboard_'+currentInfiniteDiff(), JSON.stringify(top)); }catch(e){}
+  // V1.19 上传云端：所有玩家共享排行榜
+  try{ cloudPushScore(currentInfiniteDiff(), name, waves, gold, avatar); }catch(e){}
   return top;
 }
 window.recordInfiniteScore = recordInfiniteScore;
