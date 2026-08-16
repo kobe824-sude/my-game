@@ -4507,6 +4507,35 @@ function startUpdateLoop(){
   requestAnimationFrame(update);
 }
 window.startUpdateLoop = startUpdateLoop;
+// V15.20 每关加载：进关卡前先等本关资源就绪（带进度条），杜绝进关卡瞬间卡顿导致子弹/贴图异常
+function levelLoadAssets(idx){
+  var a=['assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/ui/bg_scene.png'];
+  if((idx+1)===16){ a=a.concat(['assets/enemies/boss/boss1.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/ui/bg_boss1.png']); }
+  return a;
+}
+function showLevelLoad(idx, done){
+  var ov=document.getElementById('levelLoadOv');
+  if(!ov){ ov=document.createElement('div'); ov.id='levelLoadOv'; ov.innerHTML='<div class="lloBox">🎮 加载关卡中…<div class="lloBar"><div class="lloFill"></div></div><div class="lloText"></div></div>'; document.body.appendChild(ov); }
+  ov.style.display='flex';
+  var fill=ov.querySelector('.lloFill'), txt=ov.querySelector('.lloText');
+  var assets=levelLoadAssets(idx), total=assets.length, loaded=0, started=Date.now();
+  function upd(){ var p=Math.min(100,Math.round(loaded/total*100)); if(fill)fill.style.width=p+'%'; if(txt)txt.textContent='加载 '+p+'%…'; }
+  function one(){ loaded++; upd(); }
+  function tryDone(){
+    if((loaded>=total || Date.now()-started>4000) && Date.now()-started>250){ ov.style.display='none'; done(); }
+    else { setTimeout(tryDone, 60); }
+  }
+  for(var i=0;i<assets.length;i++){ (function(s){
+    try{
+      var im=new Image();
+      if(im.complete && im.naturalWidth>0){ one(); return; }
+      im.onload=one; im.onerror=one; im.src=s;
+    }catch(e){ one(); }
+  })(assets[i]); }
+  upd(); tryDone();
+}
+window.showLevelLoad = showLevelLoad;
+
 function enterLevel(idx, mode){
   window.levelMode = (((mode || window.selectMode || 'normal'))==='hard') ? 'hard' : 'normal';
   window.hardMult = (window.levelMode==='hard') ? 1.5 : 1;
@@ -4521,13 +4550,16 @@ function enterLevel(idx, mode){
     else { updateCornSprite(); }
   }
   hpBox.style.display="none";
-  startLevel(idx);
-  syncPlayerHpBox();
-  if(window.updateV13UI) window.updateV13UI();
-  // 战斗状态背景音乐开关 + 第15关Boss战BGM（startLevel 后 currentLevel 已更新）
-  if(typeof applyLevelBGM==='function'){ applyLevelBGM(); }
-  else if(typeof startBGM==='function'){ startBGM(); }
-  startUpdateLoop();
+  // V15.20 每关加载：先等本关资源就绪（进度条），再开始打
+  showLevelLoad(idx, function(){
+    startLevel(idx);
+    syncPlayerHpBox();
+    if(window.updateV13UI) window.updateV13UI();
+    // 战斗状态背景音乐开关 + 第15关Boss战BGM（startLevel 后 currentLevel 已更新）
+    if(typeof applyLevelBGM==='function'){ applyLevelBGM(); }
+    else if(typeof startBGM==='function'){ startBGM(); }
+    startUpdateLoop();
+  });
 }
 window.enterLevel = enterLevel;
 
