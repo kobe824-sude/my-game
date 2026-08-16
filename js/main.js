@@ -13,6 +13,11 @@ const PLAYER_JUMP_IMAGE="assets/players/miaocuijiao_cat/sprites/miaocat_jump.png
 
 const playerImg=document.getElementById("player");
 
+// V1.1 设置持久化：打开游戏先读取本地设置（奶蛙笑声/音量/难度等），修改即保存
+try{ window.gameSettings = JSON.parse(localStorage.getItem('milkfrog_settings')||'null') || window.gameSettings || { bgm:80, sfx:80 }; }catch(e){ window.gameSettings = window.gameSettings || { bgm:80, sfx:80 }; }
+function saveSettings(){ try{ localStorage.setItem('milkfrog_settings', JSON.stringify(window.gameSettings||{})); }catch(e){} }
+window.saveSettings = saveSettings;
+
 // =====================
 // 图片资源
 // =====================
@@ -1256,6 +1261,7 @@ window.setBgmInBattle = setBgmInBattle;
 function setFrogLaugh(on){
   window.gameSettings = window.gameSettings || { bgm:80, sfx:80 };
   window.gameSettings.frogLaugh = !!on;
+  if(typeof saveSettings==='function') saveSettings(); // V1.1 保存设置
   if(window.applySettings) window.applySettings();
 }
 window.setFrogLaugh = setFrogLaugh;
@@ -1333,6 +1339,7 @@ function setVolume(type, val){
   const v = Math.max(0, Math.min(100, parseInt(val)||0));
   window.gameSettings = window.gameSettings || { bgm:80, sfx:80 };
   window.gameSettings[type] = v;
+  if(typeof saveSettings==='function') saveSettings(); // V1.1 保存设置
   if(type==='bgm'){ const el = document.getElementById('setBgmVal'); if(el) el.textContent = v+'%'; }
   else { const el = document.getElementById('setSfxVal'); if(el) el.textContent = v+'%'; }
   if(window.applySettings) window.applySettings();
@@ -1341,6 +1348,7 @@ window.setVolume = setVolume;
 function setDiffMode(mode){
   window.gameSettings = window.gameSettings || {};
   window.gameSettings.diffMode = mode;
+  if(typeof saveSettings==='function') saveSettings(); // V1.1 保存设置
   if(window.applyDiffMult) window.applyDiffMult();
   if(window.applySettings) window.applySettings();
   const sp = document.getElementById('settingsPanel'); if(sp) sp.remove();
