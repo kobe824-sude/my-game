@@ -365,10 +365,6 @@ function doLogin(){
       // 老存档迁移：已获得Q技能的玩家自动解锁训练营
       if(window.accountQUnlocked && !window.accountTrainingUnlocked){ window.accountTrainingUnlocked = true; }
       window.accountAchievements = data.achievements || {}; // 读取已获成就，刷新后不会丢失/重复触发
-      // 版本迁移：Boss从15关移到16关，通关过旧15关的玩家自动解锁新16关
-      if(window.accountCleared && window.accountCleared[14] && !window.accountCleared[15]){
-        window.accountCleared[15] = true;
-      }
     } else {
       window.inventory = { equipment:[], items:{}, gold:0, xp:0, talent:0, maxItems:10, souvenirs:[], expansionCount:0 };
       window.accountMaxUnlocked = 1;
@@ -617,11 +613,6 @@ function saveGame(){
 window.saveGame = saveGame;
 
 function showMainMenu(){
-  // 版本迁移：Boss从15关移到16关，通关过旧15关的玩家自动解锁新16关
-  if(window.accountCleared && window.accountCleared[14] && !window.accountCleared[15]){
-    window.accountCleared[15] = true;
-    if(typeof saveGame==='function') saveGame();
-  }
   const p = document.getElementById('prologue'); if(p) p.style.display='none';
   const m = document.getElementById('mainMenu'); if(m) m.style.display='flex';
   if(typeof renderGiftIcon==='function') renderGiftIcon();
@@ -2387,7 +2378,8 @@ function closeMonsterBoostNotice(){
   if(window.waitingBoostClose){
     window.waitingBoostClose = false;
     window.gamePaused = false;
-    if(window.infiniteMode && typeof startInfiniteWave==='function') startInfiniteWave();
+    if(window.infiniteMode && typeof showInfiniteWaveLoad==='function') showInfiniteWaveLoad(function(){ startInfiniteWave(); });
+    else if(window.infiniteMode && typeof startInfiniteWave==='function') startInfiniteWave();
   }
 }
 window.closeMonsterBoostNotice = closeMonsterBoostNotice;
@@ -2436,7 +2428,8 @@ function pickCheckpoint(kind){
   if(window.updateV13UI) window.updateV13UI();
   window.waitingCheckpoint = false;
   window.gamePaused = false;
-  if(window.infiniteMode && typeof startInfiniteWave==='function') startInfiniteWave();
+  if(window.infiniteMode && typeof showInfiniteWaveLoad==='function') showInfiniteWaveLoad(function(){ startInfiniteWave(); });
+  else if(window.infiniteMode && typeof startInfiniteWave==='function') startInfiniteWave();
 }
 window.pickCheckpoint = pickCheckpoint;
 
@@ -3314,7 +3307,10 @@ function updateBossFx(){
 // 重置第15关剧情（重新体验）
 function resetL15Story(){
   window.accountL15Seen = false;
-  saveGame();
+  // V1.14 重置剧情后清除第16关绿勾：被打败/中途退出/重置剧情都不算通关
+  if(window.accountCleared){ window.accountCleared[15] = false; }
+  if(typeof saveGame==='function') saveGame();
+  if(typeof renderLevelSelect==='function') renderLevelSelect(); // 立即刷新勾勾
   alert('第16关剧情已重置，进入第16关将重新体验完整剧情和宗主赐福（技能加强）！');
 }
 window.resetL15Story = resetL15Story;
@@ -3742,12 +3738,64 @@ function enterInfiniteMode(){
   if(window.DOG) window.DOG.reset();
   if(activeCharacter!=='daodungou'){ window.miaocatCorn = 2; window.miaocat = { hornCooldowns:[0,0], horns:2, maxHorns:2 }; if(typeof updateCornSprite==='function') updateCornSprite(); }
   if(typeof applyLevelBGM==='function') applyLevelBGM();
-  startInfiniteWave();
+  if(typeof showInfiniteWaveLoad==='function') showInfiniteWaveLoad(function(){ startInfiniteWave(); });
+  else startInfiniteWave();
   if(window.updateV13UI) window.updateV13UI();
   startUpdateLoop();
 }
 window.enterInfiniteMode = enterInfiniteMode;
 
+// V1.14 无限模式波次加载进度条（与冒险模式一致）：每波开怪前预载素材+小提示，杜绝"怪没刷出来/贴图空白"
+var INFINITE_LOAD_TIPS=[
+  '波次会越来越密，怪物也会越来越强，记得随时升级技能！',
+  '第10/20/30/40波打完会出现中转站，可三选一增益。',
+  '第15波起怪物会增强，准备好再冲下一波。',
+  '精英奶蛙的黄色冲击波会持续掉血，别站着挨打。',
+  '奶鼠冲刺时会穿过障碍物，跳起来躲更安全。',
+  '爆裂奶蛙死后会爆炸，看到它变白赶紧拉开距离！',
+  '金币永久保留，退出无限模式也不丢进度。',
+  '大招每波之间会重新冷却，留着打精英怪更划算。',
+  '天赋树点「疾风」能减少所有技能的冷却时间。',
+  '战斗前喝护盾药，护盾会显示在左上角。',
+  '打碎木箱可能掉落金币和道具，别放过。',
+  '奶蛙的子弹跳起来或右键闪避都能躲开。',
+  '第50波是最终Boss，记得留好大招和护盾药！',
+  '难度越高金币越多（噩梦3倍），但怪也更凶。'
+];
+function showInfiniteWaveLoad(done){
+  var wave = window.infiniteWave || 1;
+  var ov = document.getElementById('levelLoadOv');
+  if(!ov){ ov=document.createElement('div'); ov.id='levelLoadOv'; ov.innerHTML='<div class="lloBox"><div class="lloTitle">♾️ 无限模式</div><div class="lloBar"><div class="lloFill"></div></div><div class="lloText"></div><div class="lloTip">💡 小提示：</div></div>'; document.body.appendChild(ov); }
+  ov.style.display='flex';
+  var fill=ov.querySelector('.lloFill'), txt=ov.querySelector('.lloText');
+  var tipEl=ov.querySelector('.lloTip'), titleEl=ov.querySelector('.lloTitle');
+  if(titleEl) titleEl.textContent='♾️ 无限模式 · 第'+wave+'波';
+  if(tipEl){
+    var tidx=((wave-1)%INFINITE_LOAD_TIPS.length+INFINITE_LOAD_TIPS.length)%INFINITE_LOAD_TIPS.length;
+    tipEl.textContent='💡 '+INFINITE_LOAD_TIPS[tidx];
+  }
+  // 无限模式通用素材（浏览器缓存命中即秒加载，不卡顿）
+  var assets=['assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/ui/bg_scene.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png','assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/daodungou/sprites/daodungou_idle.png'];
+  if(wave>=50){ assets=assets.concat(['assets/enemies/boss/boss1.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/ui/bg_boss1.png']); }
+  var total=assets.length, loaded=0, started=Date.now();
+  function upd(){ var p=Math.min(100,Math.round(loaded/total*100)); if(fill)fill.style.width=p+'%'; if(txt)txt.textContent='加载 '+p+'%…'; }
+  function one(){ loaded++; upd(); }
+  function finish(){ ov.style.display='none'; done(); }
+  function tryDone(){
+    // 等素材真正加载完（30秒兜底防网络卡死），最短展示600ms保证进度条+小提示稳定可见
+    if((loaded>=total || Date.now()-started>30000) && Date.now()-started>600){ finish(); }
+    else { setTimeout(tryDone, 60); }
+  }
+  for(var i=0;i<assets.length;i++){ (function(s){
+    try{
+      var im=new Image();
+      if(im.complete && im.naturalWidth>0){ one(); return; }
+      im.onload=one; im.onerror=one; im.src=s;
+    }catch(e){ one(); }
+  })(assets[i]); }
+  upd(); tryDone();
+}
+window.showInfiniteWaveLoad = showInfiniteWaveLoad;
 function startInfiniteWave(){
   clearEnemies();
   levelCleared = false; gameEnded = false;
@@ -3835,7 +3883,12 @@ function infiniteWaveCleared(){
     setTimeout(()=>{ if(typeof showInfiniteResult==='function') showInfiniteResult(); }, 900);
     return;
   }
-  setTimeout(()=>{ if(window.infiniteMode && !window.waitingBoostClose && !window.waitingCheckpoint) startInfiniteWave(); }, 1400);
+  setTimeout(()=>{
+    if(window.infiniteMode && !window.waitingBoostClose && !window.waitingCheckpoint){
+      if(typeof showInfiniteWaveLoad==='function') showInfiniteWaveLoad(function(){ startInfiniteWave(); });
+      else startInfiniteWave();
+    }
+  }, 1400);
 }
 window.infiniteWaveCleared = infiniteWaveCleared;
 
@@ -5377,6 +5430,7 @@ function drawQRockets(){
    if(performance.now() - (r.born||0) < 120){ const p=youngMuzzle(r.dir, qRocketW(), dx, dy); dx=p.x; dy=p.y; }
    const img=_qPool[i];
   img.src = qRocketImgSrc(); // V1.1 修复：给火箭设置贴图（否则图标不显示）
+  img.style.background = (img.src && img.src.indexOf('data:') === 0) ? '' : 'none'; // V1.14 真图加载好后去掉橙色兜底
    img.style.left=dx+'px';
    img.style.bottom=dy+'px';
    img.style.transform='scaleX('+(r.dir>0?1:-1)+')';
@@ -5605,6 +5659,7 @@ function drawBullets(){
         if(performance.now() - (b.born||0) < 120){ const p=youngMuzzle(b.dir, bulletSize(), dx, dy); dx=p.x; dy=p.y; }
         const img=_bPool[i];
         img.src=bulletImgSrc();
+        img.style.background = (img.src && img.src.indexOf('data:') === 0) ? '' : 'none'; // V1.14 真图加载好后去掉橙色兜底
         img.style.left=dx+"px";
         img.style.bottom=dy+"px";
         img.style.transform = "scaleX(" + (b.dir>0?1:-1) + ")";
