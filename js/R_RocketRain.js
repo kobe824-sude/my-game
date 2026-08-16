@@ -1,11 +1,16 @@
 // V1.3 R大招素材兜底：图片未加载完时用画布画出红圈/火箭/爆炸，保证第一次用就有可见反馈
 window._rImgPreload = window._rImgPreload || {};
-function rRocketImg(type){
+function rRocketImg(type, el){
   var map = { warn:'assets/players/miaocuijiao_cat/skills/R_rocket_rain/warning_circle.png', rocket:'assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png', boom:'assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_smoke.png' };
   var p = map[type];
   if(!window._rImgPreload[type]){ window._rImgPreload[type] = new Image(); window._rImgPreload[type].src = p; }
   var im = window._rImgPreload[type];
   if(im.complete && im.naturalWidth > 0) return p;
+  // V1.5 图片加载完成后自动把兜底换成真图（不再一直显示红框/简笔图）
+  if(el && el._rSwap !== true){
+    el._rSwap = true;
+    im.addEventListener('load', function(){ if(el && el.src && el.src.indexOf('data:') === 0){ el.src = p; } }, { once: true });
+  }
   var cv = document.createElement('canvas');
   if(type === 'warn'){ cv.width=340; cv.height=125; var c=cv.getContext('2d'); c.strokeStyle='#ff3b3b'; c.lineWidth=6; c.setLineDash([18,14]); c.strokeRect(8,8,324,109); }
   else if(type === 'rocket'){ cv.width=75; cv.height=75; var c2=cv.getContext('2d'); c2.fillStyle='#ff6d00'; c2.beginPath(); c2.ellipse(37,37,18,10,0,0,Math.PI*2); c2.fill(); c2.fillStyle='#ffd54f'; c2.beginPath(); c2.arc(55,37,8,0,Math.PI*2); c2.fill(); }
@@ -25,7 +30,7 @@ window.RRocketRain={
   if(!el){
    el=document.createElement('img');
    el.id='rWarningCircle';
-   el.src=rRocketImg('warn'); // V1.3 兜底
+   el.src=rRocketImg('warn', el); // V1.3 兜底（加载完自动换真图）
    game.appendChild(el);
   }
   const cw = this.isL15() ? 500 : 340; // 第15关红圈更大
@@ -73,7 +78,7 @@ window.RRocketRain={
  spawnRocket(x){
   let game=document.getElementById('game'); if(!game)return;
   let r=document.createElement('img');
-  r.src=rRocketImg('rocket'); // V1.3 兜底
+  r.src=rRocketImg('rocket', r); // V1.3 兜底（加载完自动换真图）
   Object.assign(r.style,{position:'absolute',left:(x-25)+'px',top:'80px',width:'75px',zIndex:50,pointerEvents:'none'});
   game.appendChild(r);
   let y=80;
@@ -88,7 +93,7 @@ window.RRocketRain={
  explode(x){
   let game=document.getElementById('game'); if(!game)return;
   let e=document.createElement('img');
-  e.src=rRocketImg('boom'); // V1.3 兜底
+  e.src=rRocketImg('boom', e); // V1.3 兜底（加载完自动换真图）
   Object.assign(e.style,{position:'absolute',left:(x-80)+'px',top:'calc(100% - 220px)',width:'160px',zIndex:60,pointerEvents:'none'});
   game.appendChild(e);
 
