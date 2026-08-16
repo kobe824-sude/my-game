@@ -124,9 +124,15 @@ window.RRocketRain={
   targets.forEach(enemy=>{
     if(!enemy) return;
     let ex=enemy.x||0;
-    let ey=enemy.y||0;
-    // V3.4: 使用实时敌人位置检测，避免移动中的奶蛙漏判
-    if(enemy===window.frog && typeof frogImg!=='undefined' && frogImg){
+    let ey=0;
+    // V1.21 群伤修复：所有敌人（不只当前目标）都用实时渲染位置算距离，
+    // 之前其他敌人 enemy.y 是 undefined(=0)，导致 R 大招范围内怪物全部打不到
+    if(enemy && enemy.img && enemy.img.getBoundingClientRect){
+      const rect=enemy.img.getBoundingClientRect();
+      const gr=game.getBoundingClientRect ? game.getBoundingClientRect() : { left:0, top:0 };
+      ex=rect.left+rect.width/2 - gr.left;
+      ey=rect.top+rect.height/2 - gr.top;
+    } else if(enemy===window.frog && typeof frogImg!=='undefined' && frogImg){
       const rect=frogImg.getBoundingClientRect();
       ex=rect.left+rect.width/2;
       ey=rect.top+rect.height/2;
