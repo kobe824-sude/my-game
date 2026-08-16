@@ -23,42 +23,39 @@
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker03.png">
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker04.png">
 <link rel="preload" as="image" href="assets/enemies/milk_mouse/sprites/mouse_idle.png">
-<link rel="stylesheet" href="css/style.css?v=15.19">
+<link rel="stylesheet" href="css/style.css?v=15.20">
 </head>
 <body>
-<div id="loadingScreen"><div class="loadingBox">🐱 妙脆角猫与刀盾狗 🐶<div class="loadingBar"><div class="loadingFill"></div></div><div class="loadingText">正在加载，请稍候…</div></div></div>
-<script>
-// V15.19 加载界面：等关键贴图加载完再开始游戏，避免进关卡时卡顿/闪白
+<div id="loadingScreen"><div class="loadingBox">🐱 妙脆角猫与刀盾狗 🐶<div class="loadingBar"><div class="loadingFill"></div></div><div class="loadingText">正在加载，请稍候…</div></div></div><script>
+// V15.20 彻底预加载：进游戏前加载好全部图片+关键音效（像本地文件夹一样流畅），带进度显示，杜绝卡顿导致的子弹/贴图问题
 (function(){
   var ls=document.getElementById('loadingScreen');
-  var minShown=Date.now()+500;
-  function hide(){ if(ls && ls.parentNode){ ls.classList.add('hide'); setTimeout(function(){ ls.remove(); },450); } }
-  function done(){ if(Date.now()<minShown){ setTimeout(done, minShown-Date.now()); return; } hide(); }
+  var fill=document.querySelector('.loadingFill');
+  var txt=document.querySelector('.loadingText');
+  var minShown=Date.now()+800;
   var startedAt=Date.now();
-  var keys=['assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png'];
-  var loaded=0;
-  function checkReady(){
-    if(loaded>=keys.length || Date.now()>startedAt+15000){ done(); }
-    else { setTimeout(checkReady, 200); }
-  }
-  for(var k=0;k<keys.length;k++){
-    (function(src){ var im=new Image(); im.onload=function(){ loaded++; }; im.onerror=function(){ loaded++; }; im.src=src; })(keys[k]);
-  }
-  if(document.readyState==='complete'){ checkReady(); }
-  else { window.addEventListener('load', function(){ checkReady(); }); }
+  var MAX=25000; // 最多等待25秒，防止极差网络卡死
+  var imgs=['assets/enemies/boom_frog/boom_frog.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/boss1.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/players/daodungou/skills/blade/dog_blade.png','assets/players/daodungou/skills/R_tornado/tornado.png','assets/players/daodungou/skills/shield/shield_effect.png','assets/players/daodungou/sprites/daodungou_idle.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_smoke.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/warning_circle.png','assets/players/miaocuijiao_cat/sprites/miaocat_bald.png','assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/players/miaocuijiao_cat/sprites/miaocat_one.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/ui/bg_abyss_preview.png','assets/ui/bg_boss1.png','assets/ui/bg_scene.png','assets/ui/characters/teacher.jpg','assets/ui/icon-192.png','assets/ui/icon-512-maskable.png','assets/ui/icon-512.png','assets/ui/teacher.png'];
+  var auds=['assets/audio/bgm/bgm.wav','assets/audio/players/miaocuijiao_cat/attack.wav','assets/audio/players/miaocuijiao_cat/hurt.wav','assets/audio/players/miaocuijiao_cat/rocket_explosion.wav','assets/audio/victory.wav','assets/audio/achievement.wav'];
+  var total=imgs.length+auds.length, loaded=0;
+  function pct(){ return Math.min(100, Math.round(loaded/total*100)); }
+  function draw(){ if(fill) fill.style.width=pct()+'%'; if(txt) txt.textContent='正在加载 '+pct()+'%…'; }
+  function hide(){ if(ls && ls.parentNode){ ls.classList.add('hide'); setTimeout(function(){ ls.remove(); },450); } }
+  function finish(){ if(Date.now()<minShown){ setTimeout(finish, minShown-Date.now()); return; } hide(); }
+  function one(){ loaded++; draw(); }
+  function check(){ if(loaded>=total || Date.now()>startedAt+MAX){ finish(); } else { setTimeout(check,150); } }
+  for(var i=0;i<imgs.length;i++){ (function(s){ var im=new Image(); im.onload=one; im.onerror=one; im.src=s; })(imgs[i]); }
+  for(var j=0;j<auds.length;j++){ (function(s){
+    var counted=false;
+    function mark(){ if(!counted){ counted=true; one(); } }
+    try{ var a=new Audio(s); a.preload='auto'; a.addEventListener('canplaythrough',mark); a.addEventListener('loadeddata',mark); a.addEventListener('error',mark); a.load(); }catch(e){ mark(); }
+    setTimeout(mark, 6000);
+  })(auds[j]); }
+  draw();
+  if(document.readyState==='complete'){ check(); } else { window.addEventListener('load', function(){ check(); }); }
 })();
 </script>
-<script>
-// V15.19 性能优化：后台预加载关键音效与贴图，避免进关卡/首次开枪时卡顿导致子弹第一帧被跳过
-(function(){
-  try{
-    var audios=['assets/audio/bgm/bgm.wav','assets/audio/players/miaocuijiao_cat/attack.wav','assets/audio/players/miaocuijiao_cat/hurt.wav','assets/audio/players/miaocuijiao_cat/rocket_explosion.wav','assets/audio/victory.wav'];
-    for(var i=0;i<audios.length;i++){ try{ var a=new Audio(audios[i]); a.preload='auto'; a.volume=0; }catch(e){} }
-    var imgs=['assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png','assets/players/daodungou/sprites/daodungou_idle.png'];
-    for(var j=0;j<imgs.length;j++){ try{ var img=new Image(); img.src=imgs[j]; }catch(e){} }
-  }catch(e){}
-})();
-</script>
+
 
 <!-- V5.9 登录 -->
 <div id="login">
@@ -199,15 +196,15 @@
   <div class="mcHint" id="mcHint">触屏操作已开启 · R：点一下瞄准/拖动，再点发射</div>
 </div>
 
-<script src="js/config.js?v=15.19"></script>
-<script src="js/enemy.js?v=15.19"></script>
-<script src="js/battle.js?v=15.19"></script>
-<script src="js/frogAI.js?v=15.19"></script>
-<script src="js/ui_v13.js?v=15.19"></script>
-<script src="js/R_RocketRain.js?v=15.19"></script>
-<script src="js/main.js?v=15.19"></script>
-<script src="js/player/DaodungouDog.js?v=15.19"></script>
-<script src="js/mobile.js?v=15.19"></script>
+<script src="js/config.js?v=15.20"></script>
+<script src="js/enemy.js?v=15.20"></script>
+<script src="js/battle.js?v=15.20"></script>
+<script src="js/frogAI.js?v=15.20"></script>
+<script src="js/ui_v13.js?v=15.20"></script>
+<script src="js/R_RocketRain.js?v=15.20"></script>
+<script src="js/main.js?v=15.20"></script>
+<script src="js/player/DaodungouDog.js?v=15.20"></script>
+<script src="js/mobile.js?v=15.20"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
