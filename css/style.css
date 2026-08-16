@@ -1191,5 +1191,13 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
   .frogWave{width:20px !important;height:20px !important;}
   .frogWave.elite{width:27px !important;height:27px !important;}
 }
+
+/* V1.14 子弹/火箭 z-index 高于玩家（玩家 z-index:10），避免第一枪从猫身上发出时被猫贴图盖住看不见 */
+.catBullet,.qRocket,.dogBlade{
+  z-index:15 !important;
+  /* 贴图加载前的可视兜底：即使图片未就绪也显示一个发光圆点，杜绝"打出去看不到子弹" */
+  background:radial-gradient(circle, rgba(255,179,0,.95) 0%, rgba(255,109,0,.85) 55%, rgba(255,109,0,0) 75%);
+  border-radius:50%;
+}
 /* V1.8 手机端敌人血条变小 */
 @media (pointer:coarse){ .enemyHpBox{width:44px !important;height:12px !important;font-size:9px !important;} }
