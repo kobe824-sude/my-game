@@ -325,6 +325,7 @@ window.accountName = null;
 window.accountMaxUnlocked = 1;
     window.accountAchievements = window.accountAchievements || {};
 window.accountQUnlocked = false;
+window.accountEUnlocked = false; // E技能是否已解锁（存档）
 window.accountSeenEnemies = window.accountSeenEnemies || []; // V1.1 已见敌人（用于新敌人登场弹窗）
 window.accountRUnlocked = false;
 
@@ -357,6 +358,7 @@ function doLogin(){
       window.accountHardCleared = data.hardCleared || {};
       window.accountL15Seen = !!data.l15Seen;
       window.accountQUnlocked = !!data.qUnlocked;
+      window.accountEUnlocked = !!data.eUnlocked;
       window.accountRUnlocked = !!data.rUnlocked;
       window.accountTrainingUnlocked = !!data.trainingUnlocked;
       window.accountSeenEnemies = data.seenEnemies || []; // V1.1 新敌人登场弹窗记录
@@ -609,7 +611,7 @@ function saveGame(){
   if((window.inventory && window.inventory.gold || 0) >= 100000 && typeof unlockAchievement==='function') unlockAchievement('rich');
   const key = 'milkfrog_data_' + window.accountName + '_' + window.accountPass;
   try{
-    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
+    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, eUnlocked: window.accountEUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
   }catch(e){}
 }
 window.saveGame = saveGame;
