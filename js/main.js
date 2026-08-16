@@ -5205,7 +5205,9 @@ window.addEventListener("mousedown",(e)=>{
       const onForm = tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT' || tag==='BUTTON' || tag==='LABEL' ||
         !!(t && t.closest && t.closest('input,textarea,select,button,label'));
       // V15.18 点击按钮/触控键/输入框等控件时不发射普攻（防止触屏合成mousedown导致双发/误发）
-      if(onForm){ return; }
+      // V15.19 手机控制区整体视为控件：任何点触手机按钮的鼠标事件都不触发攻击（杜绝双发）
+      const inMobile = !!(t && t.closest && t.closest('#mobileControls'));
+      if(onForm || inMobile){ return; }
       e.preventDefault(); // 防止点出图片选中/拖到书签
     }
     if(window.gamePaused) return;

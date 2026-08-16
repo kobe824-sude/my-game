@@ -73,4 +73,24 @@
   window.syncMobileControls = syncMobileControls;
   setInterval(syncMobileControls, 400);
   syncMobileControls();
+
+  // V15.19 手机技能按钮冷却倒计时：解锁的技能在用后按钮上显示剩余秒数
+  var _cdTimer = setInterval(function(){
+    var defs = { mcQ:['Q', 'qCooldownLeft'], mcE:['E', 'healCooldownLeft'], mcR:['R', 'rCooldownLeft'] };
+    for (var id in defs) {
+      var btn = document.getElementById(id);
+      if (!btn) continue;
+      var label = defs[id][0], cdKey = defs[id][1];
+      var cd = window[cdKey] || 0;
+      var aiming = (id === 'mcR' && btn.classList && btn.classList.contains('aiming'));
+      if (cd > 0 && !aiming) {
+        var secs = Math.ceil(cd / 1000);
+        btn.textContent = secs > 99 ? '99+' : String(secs);
+        btn.style.opacity = '0.45';
+      } else {
+        btn.textContent = aiming ? 'R•瞄' : label;
+        btn.style.opacity = '1';
+      }
+    }
+  }, 200);
 })();
