@@ -1078,22 +1078,22 @@ img{ -webkit-user-drag:none; user-drag:none; }
 
 /* ===================== V15.16 手机触屏操作 ===================== */
 #mobileControls{display:none;position:fixed;inset:0;z-index:150;pointer-events:none;touch-action:none;font-family:Arial,sans-serif;}
-#mobileControls .mcLeft{position:absolute;left:14px;bottom:18px;pointer-events:auto;display:flex;gap:10px;align-items:center;}
-#mobileControls .mcRight{position:absolute;right:12px;bottom:16px;pointer-events:auto;display:grid;grid-template-columns:repeat(3,auto);gap:8px;align-items:center;justify-items:center;}
+#mobileControls .mcLeft{position:absolute;left:8px;bottom:10px;pointer-events:auto;display:flex;gap:8px;align-items:center;}
+#mobileControls .mcRight{position:absolute;right:8px;bottom:10px;pointer-events:auto;display:grid;grid-template-columns:repeat(3,auto);gap:6px;align-items:center;justify-items:center;}
 .mcBtn{
-  width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.7);
-  background:rgba(20,32,50,.55);color:#fff;font-size:24px;font-weight:bold;
+  width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);
+  background:rgba(20,32,50,.4);color:#fff;font-size:16px;font-weight:bold;
   display:flex;align-items:center;justify-content:center;touch-action:none;
   user-select:none;-webkit-user-select:none;box-shadow:0 3px 0 rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
 }
 .mcBtn:active{transform:scale(.9);background:rgba(255,216,107,.5);}
 .mcMove{background:rgba(63,169,245,.5);}
 .mcJump{background:rgba(85,200,77,.5);}
-.mcAtk{background:rgba(255,216,107,.6);font-size:28px;}
+.mcAtk{background:rgba(255,216,107,.55);font-size:20px;}
 .mcDash{background:rgba(160,120,255,.55);}
-.mcSkill{width:46px;height:46px;font-size:18px;background:rgba(255,255,255,.22);}
+.mcSkill{width:34px;height:34px;font-size:13px;background:rgba(255,255,255,.2);}
 .mcSkill.mcR.aiming{background:rgba(255,91,75,.75);box-shadow:0 0 14px rgba(255,91,75,.9);}
-.mcPause{width:42px;height:42px;font-size:18px;background:rgba(0,0,0,.45);}
+.mcPause{width:30px;height:30px;font-size:13px;background:rgba(0,0,0,.4);}
 .mcHint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#ffd86b;font-size:12px;padding:4px 12px;border-radius:12px;pointer-events:none;white-space:nowrap;}
 @media (pointer:coarse){ #mobileControls{display:flex;} }
 

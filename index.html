@@ -28,13 +28,24 @@
 <body>
 <div id="loadingScreen"><div class="loadingBox">🐱 妙脆角猫与刀盾狗 🐶<div class="loadingBar"><div class="loadingFill"></div></div><div class="loadingText">正在加载，请稍候…</div></div></div>
 <script>
+// V15.19 加载界面：等关键贴图加载完再开始游戏，避免进关卡时卡顿/闪白
 (function(){
   var ls=document.getElementById('loadingScreen');
   var minShown=Date.now()+500;
   function hide(){ if(ls && ls.parentNode){ ls.classList.add('hide'); setTimeout(function(){ ls.remove(); },450); } }
   function done(){ if(Date.now()<minShown){ setTimeout(done, minShown-Date.now()); return; } hide(); }
-  if(document.readyState==='complete'){ done(); }
-  else { window.addEventListener('load', done); setTimeout(hide, 3500); }
+  var startedAt=Date.now();
+  var keys=['assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png'];
+  var loaded=0;
+  function checkReady(){
+    if(loaded>=keys.length || Date.now()>startedAt+15000){ done(); }
+    else { setTimeout(checkReady, 200); }
+  }
+  for(var k=0;k<keys.length;k++){
+    (function(src){ var im=new Image(); im.onload=function(){ loaded++; }; im.onerror=function(){ loaded++; }; im.src=src; })(keys[k]);
+  }
+  if(document.readyState==='complete'){ checkReady(); }
+  else { window.addEventListener('load', function(){ checkReady(); }); }
 })();
 </script>
 <script>
