@@ -4955,8 +4955,17 @@ function playerDeath(){
     }
     const box=document.createElement("div");
     box.id="gameOverBox";
-    box.innerHTML='你失败了<br><span>GAME OVER</span><br>' +
-      '<div class="failAdvice">💡 建议：先回主界面升级角色/技能，或去商店购买物资；如果金币不够，可以去「无限模式」攒金币（失败/退出金币都保留）。觉得太难可以在设置里调成「躺平」模式。</div>' +
+    // V1.17 第16关（Boss关）失败：弹出怒岚专属攻略，教玩家怎么打
+    let failAdvice = '<div class="failAdvice">💡 建议：先回主界面升级角色/技能，或去商店购买物资；如果金币不够，可以去「无限模式」攒金币（失败/退出金币都保留）。觉得太难可以在设置里调成「躺平」模式。</div>';
+    if((currentLevel+1)===16){
+      failAdvice = '<div class="failAdvice bossAdvice"><b>🗡️ 怒岚·Boss 攻略：</b><br>' +
+        '① <b>大招必躲</b>：怒岚放大招时会<b>时停 2 秒</b>，这 2 秒内按「闪避」（右键/冲刺键）就完全不会受伤！没按或闪避在冷却就会吃到大招伤害。<br>' +
+        '② <b>护盾会吃亏</b>：Boss 对护盾造成 <b>额外 50% 伤害</b>，别把护盾当万能，关键时刻优先闪避。<br>' +
+        '③ <b>它的小招</b>：注意躲开地面冲击波和落弹，跳跃或闪避都能躲。<br>' +
+        '④ <b>打之前准备</b>：去「⭐ 主角」升级血量/攻击、升级技能、买护盾药和回血药，再回来挑战。<br>' +
+        '⑤ 通关过以后重玩，Boss 会被削弱（普通 3600 血 / 困难 6000 血），大招间隔也更长（60 秒），会好打很多。</div>';
+    }
+    box.innerHTML='你失败了<br><span>GAME OVER</span><br>' + failAdvice +
       '<button onclick="retryLevel()">重新挑战</button><button onclick="backToMenu()">返回主菜单</button>';
     document.getElementById("game").appendChild(box);
     gameOverBox=box;
