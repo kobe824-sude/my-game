@@ -357,6 +357,7 @@ function doLogin(){
       window.accountCleared = data.cleared || {};
       window.accountHardCleared = data.hardCleared || {};
       window.accountL15Seen = !!data.l15Seen;
+      window.accountL15EverCleared = !!data.l15EverCleared; // V1.1 曾通关过16关（永久，重置剧情不清除）
       window.accountQUnlocked = !!data.qUnlocked;
       window.accountEUnlocked = !!data.eUnlocked;
       window.accountRUnlocked = !!data.rUnlocked;
@@ -374,6 +375,7 @@ function doLogin(){
       window.accountQUnlocked = false;
       window.accountRUnlocked = false;
       window.accountTrainingUnlocked = false;
+      window.accountL15EverCleared = false;
     }
   }catch(e){}
   // 版本迁移：旧版「skill」Q升级统一并入「skillQ」（Q技能强化独立升级）
@@ -607,7 +609,7 @@ function saveGame(){
   if((window.inventory && window.inventory.gold || 0) >= 100000 && typeof unlockAchievement==='function') unlockAchievement('rich');
   const key = 'milkfrog_data_' + window.accountName + '_' + window.accountPass;
   try{
-    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, eUnlocked: window.accountEUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
+    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, eUnlocked: window.accountEUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, l15EverCleared: !!window.accountL15EverCleared, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
   }catch(e){}
 }
 window.saveGame = saveGame;
@@ -2565,7 +2567,8 @@ function l15Init(){
   const tEl = document.getElementById('l15Timer'); if(tEl) tEl.remove();
   const boss = enemies.find(e=>e.type==='boss');
   if(!boss) return;
-  const firstTime = !window.accountL15Seen && window.levelMode!=='hard';
+  // V1.1 只有真正通关过第16关（绿勾在）才打削弱版；没通关/重置剧情 → 重新走完整剧情打完全体Boss
+  const firstTime = !(window.accountCleared && window.accountCleared[15]) && window.levelMode!=='hard';
   window.l15StoryRun = firstTime; // 本次是否为“剧情流程”运行（决定失败重试时是否从剧情重来）
   if(firstTime){
     window.l15Phase = 1;
@@ -2956,6 +2959,7 @@ function bossHitPlayer(dmg){
 function showBossTelegraph(x, r){
   const el = document.createElement('div');
   el.className = 'bossTelegraph';
+  r = Math.round(r * enemyMobileScale()); // V1.1 手机端预警圈同比例缩小
   const sz = r*2;
   el.style.width = sz+"px"; el.style.height = sz+"px";
   el.style.left = (x - r) + "px";
@@ -3061,7 +3065,8 @@ function bossTriple(e, dmgMult){
   setTimeout(()=>{ if(!e.dead){ e.attacking=false; e.cooldown=false; } }, e.atkLock);
 }
 function bossSpawnWave(e, dir, dmgMult){
-  const fx = { el:null, kind:'wave', x:e.x + dir*90, dir:dir, speed:2.4, born:Date.now(), dur:2600, hit:false, w:170, h:78, dmg:Math.round(36*dmgMult) };
+  const bfxW = enemyMobileScale(); // V1.1 手机端Boss攻击同比例缩小
+  const fx = { el:null, kind:'wave', x:e.x + dir*90, dir:dir, speed:2.4, born:Date.now(), dur:2600, hit:false, w:Math.round(170*bfxW), h:Math.round(78*bfxW), dmg:Math.round(36*dmgMult) };
   spawnQuakeImg(fx);
 }
 // 用地震波贴图生成Boss冲击波（贴地、水平推进）
@@ -3088,7 +3093,7 @@ function bossScatter(e, dmgMult){
       showBossTelegraph(tx, 26);
       setTimeout(()=>{
         if(e.dead) return;
-        const fx = { el:null, kind:'pellet', x:tx, born:Date.now(), dur:200, hit:false, w:44, h:44, dmg:Math.round(20*dmgMult) };
+        const fx = { el:null, kind:'pellet', x:tx, born:Date.now(), dur:200, hit:false, w:Math.round(44*enemyMobileScale()), h:Math.round(44*enemyMobileScale()), dmg:Math.round(20*dmgMult) };
         const el = document.createElement('div');
         el.className = 'bossFx pellet';
         el.style.width=fx.w+"px"; el.style.height=fx.h+"px";
@@ -3110,7 +3115,8 @@ function bossBreath(e, dmgMult){
   const dir = (enemy.x >= e.x) ? 1 : -1;
   setTimeout(()=>{
     if(e.dead) return;
-    const w = 430, h = 135;
+    const bfxB = enemyMobileScale(); // V1.1 手机端Boss攻击同比例缩小
+    const w = Math.round(430 * bfxB), h = Math.round(135 * bfxB);
     const fx = { el:null, kind:'breath', x:e.x + (dir>0?150:-150), born:Date.now(), dur:1500, hit:false, w:w, h:h, dmg:Math.round(32*dmgMult), lastHit:0 };
     const el = document.createElement('img');
     el.className = 'bossFx breathImg';
@@ -3161,8 +3167,9 @@ function bossSmash(e, dmgMult){
   warn.className = 'bossSmashWarn';
   // 椭圆随Boss体型缩放：完全体440，削弱后缩小到300，红圈跟着缩小，保证压中玩家
   const bossScale = (e.phase===2) ? 0.68 : 1;
-  const szW = Math.max(200, Math.round(440 * bossScale));
-  const szH = Math.max(70, Math.round(140 * bossScale));
+  const bfxS = enemyMobileScale(); // V1.1 手机端Boss攻击同比例缩小
+  const szW = Math.max(140, Math.round(440 * bossScale * bfxS));
+  const szH = Math.max(50, Math.round(140 * bossScale * bfxS));
   warn.style.width = szW+"px"; warn.style.height = szH+"px";
   warn.style.left = (targetX - szW/2) + "px";
   document.getElementById('game').appendChild(warn);
@@ -3177,7 +3184,7 @@ function bossSmash(e, dmgMult){
     showBossTelegraph(tx, 34); // 红圈放大，更醒目
     setTimeout(()=>{
       if(e.dead) return;
-      const fx = { el:null, kind:'pellet', x:tx, born:Date.now(), dur:1300, hit:false, w:72, h:72, dmg:Math.round(15 * (window.hardMult||1) * (window.diffDmgMult||1)), lastHit:0 }; // 干扰用低伤害：普通15，困难/噩梦按倍数上翻
+      const fx = { el:null, kind:'pellet', x:tx, born:Date.now(), dur:1300, hit:false, w:Math.round(72*enemyMobileScale()), h:Math.round(72*enemyMobileScale()), dmg:Math.round(15 * (window.hardMult||1) * (window.diffDmgMult||1)), lastHit:0 }; // 干扰用低伤害：普通15，困难/噩梦按倍数上翻
       const el = document.createElement('img');
       el.className = 'bossFx pelletImg';
       el.src = QUAKE_WAVE_IMAGE;
@@ -3221,9 +3228,10 @@ function bossAnnihil(e, dmgMult){
     playBossAudio(BOSS_QUAKE_AUDIO, 2200);
     shakeScreen(360, 10);
     const dir = (enemy.x >= e.x) ? 1 : -1;
-    const bw = 720, bh = 260; // 比剧情杀小一点，但体积仍然较大
+    const bfxA = enemyMobileScale(); // V1.1 手机端Boss攻击同比例缩小
+    const bw = Math.round(720 * bfxA), bh = Math.round(260 * bfxA); // 比剧情杀小一点，但体积仍然较大
     if(typeof startAnnihilSlowmo==='function') startAnnihilSlowmo(); // 大招发射：进入2秒慢动作，提示按右键闪避
-    const fx = { el:null, kind:'annihil', x:(e.x + (dir>0?60:-60-bw)), dir:dir, speed:3.6, born:Date.now(), dur:2600, hit:false, w:bw, h:260, dmg:Math.round(300*dmgMult), lastHit:0 }; // h=260 与贴图同高，跳得比贴图高或用闪避即可躲开
+    const fx = { el:null, kind:'annihil', x:(e.x + (dir>0?60:-60-bw)), dir:dir, speed:3.6, born:Date.now(), dur:2600, hit:false, w:bw, h:bh, dmg:Math.round(300*dmgMult), lastHit:0 }; // h 与贴图同高，跳得比贴图高或用闪避即可躲开
     const el = document.createElement('img');
     el.className = 'bossFx annihilImg';
     el.src = ANNIHILATION_IMAGE;
@@ -4037,6 +4045,8 @@ function checkLevelClear(){
     // Boss关胜利：先停5秒让玩家确认Boss已击败（防止狂点鼠标把剧情瞬间点过去），再播胜利音乐+小剧情
     if(isBossLv){
       window.l15StoryRun = false; // 已通关，本次剧情流程结束
+      window.accountL15EverCleared = true; // V1.1 永久标记：曾通关过16关（剧情恢复按钮据此显示）
+      if(typeof saveGame==='function') saveGame();
       if(typeof showStoryHint==='function') showStoryHint('🎉 暗影蛙将·怒岚 被击败了！');
       // R大招解锁提示：首次通关第16关后再弹出（不在进关/剧情中途弹）
       if(firstClear15 && typeof showSkillUnlockPopup==='function'){
@@ -4441,9 +4451,10 @@ function updateEnemyAI(e){
     }
   } else {
     if(distance < DANGER_DISTANCE && e.state!=="RETREAT"){ e.state="RETREAT"; }
-    if(distance <= ATTACK_RANGE && !e.attacking && !e.cooldown && e.state!=="HURT" && e.state!=="RETREAT"){
-      startAttack(e);
-    }
+  }
+  // V1.1 攻击判定统一提前：只要在攻击范围内(650)就攻击，不因追击/保持距离分支卡住（修复奶蛙 500~520 站着不动不攻击）
+  if(distance <= ATTACK_RANGE && !e.attacking && !e.cooldown && e.state!=="HURT" && e.state!=="RETREAT" && !e.stunned){
+    startAttack(e);
   }
 
   // 追击/保持距离（实体阻挡：含跳跃高度——跳起来能越过矮障碍，但过不去高塔）
@@ -4486,8 +4497,8 @@ function updateEnemyAI(e){
         e.jumping = true; e.jumpV = -13; e.lastJump = Date.now();
         const txj = e.x + dirStep*effSpeed*0.5;
         if(!blocked(txj)) e.x = txj;
-      } else if(distance > 520){ if(!blocked(tx)) e.x = tx; }
-      else if(distance < 360 && !e.attacking && !e.cooldown){ const tr=e.x - dirStep*effSpeed*0.9; if(!blocked(tr)) e.x = tr; }
+      } else if(distance > ATTACK_RANGE){ if(!blocked(tx)) e.x = tx; }
+      else if(distance < DANGER_DISTANCE && !e.attacking && !e.cooldown){ const tr=e.x - dirStep*effSpeed*0.9; if(!blocked(tr)) e.x = tr; }
     }
   }
   clampWorld(e);
@@ -4855,9 +4866,9 @@ function renderLevelSelect(){
       (cleared ? '<div class="lvDone">✓</div>' : '') +
       '</div>';
   }
-  // 第15关：通关后可重新体验剧情
+  // 第16关：曾通关过即可随时重新体验剧情（永久标记，重置剧情后按钮仍在）
   const l15c = LEVELS.find(l=>l.flag==='boss');
-  if(l15c && window.accountCleared && window.accountCleared[l15c.level-1]){
+  if(l15c && window.accountL15EverCleared){
     html += '<div class="lvReplayBtnWrap"><button class="lvReplayBtn" onclick="resetL15Story()">🎬 重新体验第16关剧情</button></div>';
   }
   list.innerHTML = html;
@@ -5140,7 +5151,7 @@ window.bulletMobileScale = bulletMobileScale;
 // 手机端发射点更低（主角变小后上抬量按比例缩小，避免子弹悬空打不到敌人）
 function muzzleYOffset(){ return Math.round(20 * bulletMobileScale()); }
 // V1.12 手机端跳跃力度缩放：主角变小后跳太高会出屏幕，一段跳约94px（能躲奶蛙波），二段约188px
-function jumpMobileScale(){ return ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.72 : 1; }
+function jumpMobileScale(){ return ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.8 : 1; } // V1.1 手机跳跃略增（能躲Boss攻击，仍不出屏幕）
 window.jumpMobileScale = jumpMobileScale;
 function bulletSize(){ return Math.round(72 * bulletMobileScale()); }
 function qRocketW(){ return Math.round(110 * bulletMobileScale()); }

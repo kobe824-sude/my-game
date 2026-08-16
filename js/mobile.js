@@ -53,18 +53,49 @@
   if(D) D.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(window.l15LockControls || window.gamePaused) return; useDash(); });
   if(P) P.addEventListener('pointerdown', function(ev){ ev.preventDefault(); togglePause(); });
 
-  // 猫的 R 大招：点一下开始瞄准（红圈出现），手指在屏幕上拖动调整位置，再点 R 发射
+  // 猫的 R 大招：按住 R 瞄准（红圈跟随手指），松开 R 释放，与电脑版一致；灵敏度适中，红圈不会拖出屏幕
   var rAimingMobile = false;
-  function toggleRAim(){
+  function rAimStart(){
     if(activeCharacter==='daodungou') return;
-    if(rAimingMobile){
-      releaseRAim(); rAimingMobile=false;
-      if(Rbtn){ Rbtn.classList.remove('aiming'); Rbtn.textContent='R'; }
-    } else {
-      startRAim(); rAimingMobile=true;
-      if(Rbtn){ Rbtn.classList.add('aiming'); Rbtn.textContent='R•瞄'; }
-    }
+    if(rAimingMobile) return;
+    if(window.l15LockControls || window.gamePaused) return;
+    var su = (typeof skillUnlocks==='function') ? skillUnlocks() : {e:true,q:true,r:true};
+    if(!su.r || typeof startRAim!=='function') return;
+    startRAim(); rAimingMobile=true;
+    if(Rbtn){ Rbtn.classList.add('aiming'); }
   }
+  function rAimEnd(){
+    if(!rAimingMobile) return;
+    rAimingMobile=false;
+    if(Rbtn){ Rbtn.classList.remove('aiming'); }
+    if(typeof releaseRAim==='function') releaseRAim();
+  }
+  if(Rbtn){
+    Rbtn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); rAimStart(); });
+    Rbtn.addEventListener('pointerup', function(ev){ ev.preventDefault(); rAimEnd(); });
+    Rbtn.addEventListener('pointercancel', function(){ rAimEnd(); });
+    Rbtn.addEventListener('pointerleave', function(){ rAimEnd(); });
+  }
+  // 拖动调整 R 瞄准位置：灵敏度适中 + 限制在屏幕内（红圈中心不会拖出屏幕）
+  var _rAimLastX = null;
+  document.addEventListener('pointermove', function(ev){
+    if(rAimingMobile && window.rAiming && window.RRocketRain){
+      // 灵敏度：红圈移动量 = 手指移动量 * 0.75，避免一下拖出屏幕
+      var nx = ev.clientX;
+      if(_rAimLastX !== null){
+        var delta = (nx - _rAimLastX) * 0.75;
+        window.RRocketRain.targetX = Math.max(140, Math.min(window.innerWidth-140, (window.RRocketRain.targetX||window.innerWidth/2) + delta));
+      } else {
+        window.RRocketRain.targetX = Math.max(140, Math.min(window.innerWidth-140, nx));
+      }
+      _rAimLastX = nx;
+      if(window.RRocketRain.updateWarning) window.RRocketRain.updateWarning();
+    } else {
+      _rAimLastX = null;
+    }
+  });
+  // 兼容旧引用（其它代码可能调用 toggleRAim/skill('r')）
+  window.toggleRAim = function(){ if(rAimingMobile) rAimEnd(); else rAimStart(); };
   function skill(k){
     if(window.l15LockControls || window.gamePaused) return;
     var su = (typeof skillUnlocks==='function') ? skillUnlocks() : {e:true,q:true,r:true};
@@ -75,20 +106,10 @@
     } else {
       if(k==='e' && su.e && typeof useHealSkill==='function') useHealSkill();
       else if(k==='q' && su.q && typeof useQRocket==='function') useQRocket();
-      else if(k==='r' && su.r && typeof startRAim==='function') toggleRAim();
     }
   }
   if(E) E.addEventListener('pointerdown', function(ev){ ev.preventDefault(); skill('e'); });
   if(Q) Q.addEventListener('pointerdown', function(ev){ ev.preventDefault(); skill('q'); });
-  if(Rbtn) Rbtn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); skill('r'); });
-
-  // 拖动调整 R 瞄准位置
-  document.addEventListener('pointermove', function(ev){
-    if(rAimingMobile && window.rAiming && window.RRocketRain){
-      window.RRocketRain.targetX = Math.max(100, Math.min(window.innerWidth-100, ev.clientX));
-      if(window.RRocketRain.updateWarning) window.RRocketRain.updateWarning();
-    }
-  });
 
   // 防止触屏误滚动/缩放
   document.addEventListener('touchmove', function(ev){ if(ev.target && ev.target.closest && ev.target.closest('#mobileControls')){ ev.preventDefault(); } }, {passive:false});
@@ -140,7 +161,7 @@
         btn._cdNum.style.opacity = '1';
         btn._cdNum.style.fontSize = '15px';
       } else {
-        btn._cdNum.textContent = aiming ? 'R•瞄' : d.label;
+        btn._cdNum.textContent = d.label;
         btn._cdNum.style.opacity = '1';
         btn._cdNum.style.fontSize = '15px';
       }
