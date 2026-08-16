@@ -320,6 +320,7 @@ window.accountName = null;
 window.accountMaxUnlocked = 1;
     window.accountAchievements = window.accountAchievements || {};
 window.accountQUnlocked = false;
+window.accountSeenEnemies = window.accountSeenEnemies || []; // V1.1 已见敌人（用于新敌人登场弹窗）
 window.accountRUnlocked = false;
 
 function doLogin(){
@@ -353,6 +354,7 @@ function doLogin(){
       window.accountQUnlocked = !!data.qUnlocked;
       window.accountRUnlocked = !!data.rUnlocked;
       window.accountTrainingUnlocked = !!data.trainingUnlocked;
+      window.accountSeenEnemies = data.seenEnemies || []; // V1.1 新敌人登场弹窗记录
       // 老存档迁移：已获得Q技能的玩家自动解锁训练营
       if(window.accountQUnlocked && !window.accountTrainingUnlocked){ window.accountTrainingUnlocked = true; }
       window.accountAchievements = data.achievements || {}; // 读取已获成就，刷新后不会丢失/重复触发
@@ -602,7 +604,7 @@ function saveGame(){
   if((window.inventory && window.inventory.gold || 0) >= 100000 && typeof unlockAchievement==='function') unlockAchievement('rich');
   const key = 'milkfrog_data_' + window.accountName + '_' + window.accountPass;
   try{
-    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked }));
+    localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
   }catch(e){}
 }
 window.saveGame = saveGame;
@@ -2468,6 +2470,27 @@ function showSkillUnlockPopup(text){
 }
 window.showSkillUnlockPopup = showSkillUnlockPopup;
 
+// V1.1 新敌人登场弹窗：进关加载完后展示新敌人的图鉴介绍（特征/弱点/应对）
+const LEVEL_NEW_ENEMIES = { 5:'elitefrog', 9:'mouse', 10:'elitemouse', 13:'boom', 16:'boss' };
+function showNewEnemyPopup(key){
+  const info = (typeof CODEX_DATA!=='undefined') ? CODEX_DATA[key] : null;
+  if(!info) return;
+  const old = document.getElementById('newEnemyPopup'); if(old) old.remove();
+  window.gamePaused = true;
+  const ov = document.createElement('div');
+  ov.id = 'newEnemyPopup';
+  ov.className = 'newEnemyPopup';
+  ov.innerHTML = '<div class="nepCard"><div class="nepTitle">👾 新敌人登场！</div>' +
+    '<div class="nepBody"><img class="nepImg" src="' + info.img + '" alt="' + info.name + '"><div class="nepInfo"><b>' + info.name + '</b><p>' + info.text + '</p></div></div>' +
+    '<div class="nepTip">点击任意处继续（或等待自动关闭）</div></div>';
+  document.body.appendChild(ov);
+  let closed = false;
+  function close(){ if(!closed && ov.parentNode){ closed=true; ov.parentNode.removeChild(ov); window.gamePaused=false; document.removeEventListener('pointerdown', close); } }
+  setTimeout(close, 5000);
+  document.addEventListener('pointerdown', close);
+}
+window.showNewEnemyPopup = showNewEnemyPopup;
+
 function updateEnemyJump(e){
   if(e.smashAnim) return; // 泰山压顶期间用手动升空动画，不走跳跃物理
   // 平滑地面高度：走上/走下平台时缓升缓降，不瞬移
@@ -4087,6 +4110,10 @@ function updateEnemyHp(e){
 }
 function followEnemyHp(e){
   if(!e || !e.hpBox) return;
+  // V1.1 性能优化：每个敌人最多每50ms更新一次（减少布局计算）
+  const now = Date.now();
+  if(now - (e._fehLast||0) < 50) return;
+  e._fehLast = now;
   const rect = e.img.getBoundingClientRect();
   e.hpBox.style.left = (rect.left + rect.width/2 - 35) + "px";
   e.hpBox.style.top = (rect.top - 25) + "px";
@@ -4553,6 +4580,18 @@ function enterLevel(idx, mode){
   // V15.20 每关加载：先等本关资源就绪（进度条），再开始打
   showLevelLoad(idx, function(){
     startLevel(idx);
+    // V1.1 新敌人登场弹窗：首次遇到该关的新敌人时展示
+    {
+      const nk = (typeof LEVEL_NEW_ENEMIES!=='undefined') ? LEVEL_NEW_ENEMIES[(idx+1)] : null;
+      if(nk){
+        const seen = window.accountSeenEnemies || (window.accountSeenEnemies=[]);
+        if(seen.indexOf(nk)===-1){
+          seen.push(nk);
+          if(typeof saveGame==='function') saveGame();
+          setTimeout(function(){ if(typeof showNewEnemyPopup==='function') showNewEnemyPopup(nk); }, 400);
+        }
+      }
+    }
     // V15.20 技能解锁提示：首次进入该关（技能首次可用）就提示，而不是通关后才提示
     if(!window.infiniteMode && !window.trainingMode){
       if(!window.accountEUnlocked && (idx+1)===5){
@@ -5230,6 +5269,7 @@ function drawQRockets(){
    // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
    if(performance.now() - (r.born||0) < 120){ const p=youngMuzzle(r.dir, 110, dx, dy); dx=p.x; dy=p.y; }
    const img=_qPool[i];
+  img.src = qRocketImgSrc(); // V1.1 修复：给火箭设置贴图（否则图标不显示）
    img.style.left=dx+'px';
    img.style.bottom=dy+'px';
    img.style.transform='scaleX('+(r.dir>0?1:-1)+')';
@@ -5741,7 +5781,10 @@ function clampWorld(obj){
 
 function followPlayerHP(){
     if(!hpBox || !enemyObj) return;
-    // V1.6: HP bar is locked to player transform position every frame
+    // V1.1 性能优化：最多每40ms更新一次（减少getBoundingClientRect布局计算，画面几乎无感）
+    const now = Date.now();
+    if(now - (window._fphLast||0) < 40) return;
+    window._fphLast = now;
     const rect=enemyObj.getBoundingClientRect();
     hpBox.style.left=(rect.left+rect.width/2-50)+"px";
     hpBox.style.top=(rect.top-55)+"px";
@@ -5822,11 +5865,11 @@ function update(){
     if(typeof updateL15==='function') updateL15();
   if(typeof updateSpecial==='function') updateSpecial();
 
-    // 信息面板（调试用）
-    if(info){
-      const alive = enemies.filter(e=>!e.dead);
+    // 信息面板（调试用，隐藏时不更新，避免每帧innerHTML开销）
+    if(info && info.style.display !== 'none'){
+      let alive = 0; for(let _i=0;_i<enemies.length;_i++){ if(!enemies[_i].dead) alive++; }
       info.innerHTML = "关卡: 第"+(currentLevel+1)+"关" +
-        "<br>敌人剩余: " + alive.length +
+        "<br>敌人剩余: " + alive +
         (frog ? "<br>最近HP: " + Math.max(0,Math.round(frog.hp)) : "");
     }
 
