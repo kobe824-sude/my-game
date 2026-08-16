@@ -1078,23 +1078,24 @@ img{ -webkit-user-drag:none; user-drag:none; }
 
 /* ===================== V15.16 手机触屏操作 ===================== */
 #mobileControls{display:none;position:fixed;inset:0;z-index:150;pointer-events:none;touch-action:none;font-family:Arial,sans-serif;}
-#mobileControls .mcLeft{position:absolute;left:8px;bottom:10px;pointer-events:auto;display:flex;gap:8px;align-items:center;}
+
+/* ========== V1.7 手机UI：卡通圆形 + 扇形布局 ========== */
 @media (pointer:coarse){
   #mobileControls{display:flex;}
-  #mobileControls .mcBtn{box-sizing:border-box;padding:0;}
-  #mobileControls .mcRight{position:absolute;right:10px;bottom:12px;display:block;width:200px;height:190px;pointer-events:none;}
-  #mcAtk{position:absolute;right:4px;bottom:4px;width:72px;height:72px;font-size:26px;pointer-events:auto;background:rgba(255,216,107,.6);border:2.5px solid rgba(255,255,255,.8);}
-  #mcDash{position:absolute;right:86px;bottom:18px;width:44px;height:44px;font-size:14px;pointer-events:auto;}
-  #mcE{position:absolute;right:140px;bottom:18px;width:44px;height:44px;font-size:14px;pointer-events:auto;}
-  #mcQ{position:absolute;right:48px;bottom:88px;width:46px;height:46px;font-size:15px;pointer-events:auto;}
-  #mcR{position:absolute;right:106px;bottom:88px;width:46px;height:46px;font-size:15px;pointer-events:auto;}
-  #mcPause{position:absolute;top:10px;right:10px;width:30px;height:30px;font-size:12px;pointer-events:auto;}
-  /* 左侧移动：紧凑布局 */
-  #mobileControls .mcLeft{position:absolute;left:10px;bottom:14px;display:block;width:112px;height:112px;pointer-events:none;}
-  #mcLeft{position:absolute;left:0;bottom:58px;width:48px;height:48px;font-size:18px;pointer-events:auto;}
-  #mcRight{position:absolute;left:60px;bottom:58px;width:48px;height:48px;font-size:18px;pointer-events:auto;}
-  #mcJump{position:absolute;left:30px;bottom:0;width:48px;height:48px;font-size:18px;pointer-events:auto;}
-  /* 血条HUD缩小为左上角一小块（强制、紧凑） */
+  #mobileControls .mcBtn{box-sizing:border-box;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+  /* 左侧：左右移动（两个圆钮并排） */
+  #mobileControls .mcLeft{position:absolute;left:16px;bottom:24px;display:flex;gap:24px;pointer-events:none;}
+  #mcLeft,#mcRight{width:62px;height:62px;font-size:22px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #9fd0ff, #3f8cf0 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.85);box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.3);}
+  /* 右侧：扇形（攻击为中心，跳跃在攻击上方，其余环绕） */
+  #mobileControls .mcRight{position:absolute;right:12px;bottom:14px;display:block;width:215px;height:220px;pointer-events:none;}
+  #mcAtk{position:absolute;right:64px;bottom:6px;width:86px;height:86px;font-size:32px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #ffe08a, #ff9d2e 60%, #f4761e);color:#7a3c00;border:3px solid rgba(255,255,255,.9);box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.35);}
+  #mcJump{position:absolute;right:66px;bottom:100px;width:56px;height:56px;font-size:22px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #b8ff9e, #4fcb3f 60%, #2e9e22);color:#123d09;border:3px solid rgba(255,255,255,.85);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcDash{position:absolute;right:158px;bottom:22px;width:52px;height:52px;font-size:18px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #d7c2ff, #8a5cf6 60%, #6a3de0);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcE{position:absolute;right:6px;bottom:22px;width:52px;height:52px;font-size:16px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcQ{position:absolute;right:146px;bottom:110px;width:50px;height:50px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcR{position:absolute;right:10px;bottom:110px;width:50px;height:50px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcPause{position:absolute;top:10px;right:10px;width:32px;height:32px;font-size:13px;pointer-events:auto;background:rgba(0,0,0,.55);color:#fff;border-radius:50%;border:2px solid rgba(255,255,255,.5);}
+  /* 血条HUD缩小为左上角一小块 */
   #playerHUD,#frogHUD{top:5px !important;padding:2px 5px !important;border-radius:7px;border-width:1px;min-width:0 !important;width:auto !important;font-size:9px !important;box-shadow:none !important;}
   #playerHUD{left:5px !important;}
   #frogHUD{right:5px !important;}
@@ -1104,10 +1105,12 @@ img{ -webkit-user-drag:none; user-drag:none; }
   #playerHUD .hornSlots img{width:11px !important;height:11px !important;margin:0 1px 0 0 !important;}
   #playerHUD #cornText{font-size:8px !important;margin:1px 0 0 !important;}
   #dogShieldRow .hudBar{width:62px !important;height:6px !important;}
-  /* 桌面冷却条在手机上隐藏（触屏按钮自带冷却倒计时） */
   #skillBar{display:none !important;}
-  /* 人物缩小 */
   #player{width:64px !important;height:64px !important;}
+  /* 冷却扇形与数字 */
+  .mcSkill{position:relative;overflow:hidden;font-weight:bold;}
+  .cdSector{position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2;}
+  .cdNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;font-size:15px;font-weight:bold;color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;pointer-events:none;font-family:Arial,sans-serif;line-height:1;}
 }
 
 /* V15.20 每关加载遮罩 */
@@ -1139,3 +1142,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
 .hlwBtns{display:flex;flex-direction:column;gap:10px;}
 .hlwGo{background:linear-gradient(90deg,#ff8a3c,#ff5b4b);border:none;border-radius:12px;padding:12px;font-size:16px;font-weight:bold;color:#fff;cursor:pointer;}
 .hlwBack{background:rgba(255,255,255,.14);border:2px solid #fff6;border-radius:12px;padding:10px;font-size:15px;color:#ffe8c0;cursor:pointer;}
+
+
+/* V1.7 手机技能冷却数字（显示在扇形之上） */
+.cdNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;font-size:15px;font-weight:bold;color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;pointer-events:none;font-family:Arial,sans-serif;line-height:1;}

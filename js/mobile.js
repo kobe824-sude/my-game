@@ -77,23 +77,38 @@
   setInterval(syncMobileControls, 400);
   syncMobileControls();
 
-  // V15.19 手机技能按钮冷却倒计时：解锁的技能在用后按钮上显示剩余秒数
+  // V1.7 手机技能按钮：扇形冷却遮罩 + 数字倒计时（带小数）+ 未解锁显示锁
   var _cdTimer = setInterval(function(){
     var defs = { mcQ:['Q', 'qCooldownLeft'], mcE:['E', 'healCooldownLeft'], mcR:['R', 'rCooldownLeft'] };
+    var su = (typeof skillUnlocks === 'function') ? skillUnlocks() : {e:true,q:true,r:true};
     for (var id in defs) {
       var btn = document.getElementById(id);
       if (!btn) continue;
       var label = defs[id][0], cdKey = defs[id][1];
       var cd = window[cdKey] || 0;
+      var locked = (id === 'mcQ' && !su.q) || (id === 'mcE' && !su.e) || (id === 'mcR' && !su.r);
+      // 扇形遮罩
+      if (!btn._cdEl) { btn._cdEl = document.createElement('div'); btn._cdEl.className = 'cdSector'; btn.appendChild(btn._cdEl); }
+      // 数字层
+      if (!btn._cdNum) { btn._cdNum = document.createElement('span'); btn._cdNum.className = 'cdNum'; btn.appendChild(btn._cdNum); }
+      if (cd > (btn._cdMax || 0)) btn._cdMax = cd;
+      var max = btn._cdMax || 1;
+      var f = Math.min(1, cd / max);
+      var deg = Math.max(0, Math.min(360, Math.round(360 * (1 - f))));
+      btn._cdEl.style.background = 'conic-gradient(rgba(0,0,0,0) ' + deg + 'deg, rgba(0,0,0,.68) ' + deg + 'deg 360deg)';
+      if (cd <= 0) btn._cdMax = 0;
       var aiming = (id === 'mcR' && btn.classList && btn.classList.contains('aiming'));
-      if (cd > 0 && !aiming) {
-        var secs = Math.ceil(cd / 1000);
-        btn.textContent = secs > 99 ? '99+' : String(secs);
-        btn.style.opacity = '0.45';
+      if (locked) { btn._cdNum.textContent = '🔒'; btn._cdNum.style.opacity = '.85'; btn._cdNum.style.fontSize = '18px'; }
+      else if (cd > 0) {
+        var secs = cd / 1000;
+        btn._cdNum.textContent = secs >= 100 ? '99+' : (secs >= 10 ? secs.toFixed(0) : secs.toFixed(1));
+        btn._cdNum.style.opacity = '1';
+        btn._cdNum.style.fontSize = '15px';
       } else {
-        btn.textContent = aiming ? 'R•瞄' : label;
-        btn.style.opacity = '1';
+        btn._cdNum.textContent = aiming ? 'R•瞄' : label;
+        btn._cdNum.style.opacity = '1';
+        btn._cdNum.style.fontSize = '15px';
       }
     }
-  }, 200);
+  }, 150);
 })();
