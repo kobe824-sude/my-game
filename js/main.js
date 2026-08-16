@@ -4570,20 +4570,49 @@ function startUpdateLoop(){
 window.startUpdateLoop = startUpdateLoop;
 // V15.20 每关加载：进关卡前先等本关资源就绪（带进度条），杜绝进关卡瞬间卡顿导致子弹/贴图异常
 function levelLoadAssets(idx){
-  var a=['assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/ui/bg_scene.png'];
+  // V1.13 补全素材：普攻子弹/Q火箭/双角色精灵/刀盾狗技能图，进关即就绪
+  var a=['assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/ui/bg_scene.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png','assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/players/miaocuijiao_cat/sprites/miaocat_one.png','assets/players/daodungou/sprites/daodungou_idle.png','assets/players/daodungou/skills/blade/dog_blade.png','assets/players/daodungou/skills/R_tornado/tornado.png','assets/players/daodungou/skills/shield/shield_effect.png'];
   if((idx+1)===16){ a=a.concat(['assets/enemies/boss/boss1.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/ui/bg_boss1.png','assets/ui/teacher.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/warning_circle.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_smoke.png']); } // V1.3 含剧情老师图 + R大招红圈/火箭图
   return a;
 }
+// V1.13 每关加载小提示：轮换展示（可重复，但不连续相同），来自图鉴/玩法小窍门
+var LEVEL_LOAD_TIPS=[
+  '奶蛙发射子弹时，跳跃或右键闪避都能躲开！',
+  '靠近奶蛙会触发它快速反击，保持距离再输出更安全。',
+  '按空格可以二段跳，跳得更高躲开地上的冲击波。',
+  '右键闪避有 3 秒冷却，能直接穿过敌人的弹幕。',
+  '打碎木箱会掉落金币和道具，别放过路上的箱子。',
+  '精英奶蛙的黄色冲击波会持续掉血，别站在里面。',
+  '奶鼠冲刺时会穿过障碍物，注意跳起来躲开。',
+  '爆裂奶蛙死后会爆炸，看到它变白赶紧拉开距离！',
+  '站在哨塔顶上，地面的普通奶蛙打不到你。',
+  '战斗前在商店喝护盾药，护盾会显示在左上角。',
+  '天赋树点「疾风」能减少所有技能的冷却时间。',
+  '技能升级到 5 级会解锁额外强化效果，优先投资主力技能。',
+  '大招在非 Boss 关一进场就开始冷却，别浪费在清小怪上。',
+  '困难模式每通关 2 关获得 1 个天赋点。',
+  '图鉴里记录了每个敌人的弱点和应对方法，遇到新敌人先看看。',
+  '第16关 Boss 放大招时会时停 2 秒，按闪避就能完全躲开！'
+];
 function showLevelLoad(idx, done){
   var ov=document.getElementById('levelLoadOv');
-  if(!ov){ ov=document.createElement('div'); ov.id='levelLoadOv'; ov.innerHTML='<div class="lloBox">🎮 加载关卡中…<div class="lloBar"><div class="lloFill"></div></div><div class="lloText"></div></div>'; document.body.appendChild(ov); }
+  if(!ov){ ov=document.createElement('div'); ov.id='levelLoadOv'; ov.innerHTML='<div class="lloBox"><div class="lloTitle">🎮 加载关卡中…</div><div class="lloBar"><div class="lloFill"></div></div><div class="lloText"></div><div class="lloTip">💡 小提示：</div></div>'; document.body.appendChild(ov); }
   ov.style.display='flex';
   var fill=ov.querySelector('.lloFill'), txt=ov.querySelector('.lloText');
+  // V1.13 每关显示不同小提示（按关卡轮换）
+  var tipEl=ov.querySelector('.lloTip');
+  if(tipEl){
+    var tipIdx=((idx % LEVEL_LOAD_TIPS.length)+LEVEL_LOAD_TIPS.length)%LEVEL_LOAD_TIPS.length;
+    tipEl.textContent='💡 '+LEVEL_LOAD_TIPS[tipIdx];
+  }
+  var titleEl=ov.querySelector('.lloTitle');
+  if(titleEl && typeof LEVELS!=='undefined' && LEVELS[idx]) titleEl.textContent='🎮 '+LEVELS[idx].name;
   var assets=levelLoadAssets(idx), total=assets.length, loaded=0, started=Date.now();
   function upd(){ var p=Math.min(100,Math.round(loaded/total*100)); if(fill)fill.style.width=p+'%'; if(txt)txt.textContent='加载 '+p+'%…'; }
   function one(){ loaded++; upd(); }
   function tryDone(){
-    if((loaded>=total || Date.now()-started>4000) && Date.now()-started>250){ ov.style.display='none'; done(); }
+    // V1.13 等所有素材真正加载完成再进关（杜绝进关后图片还是空白）；仅 30 秒兜底防网络卡死
+    if(loaded>=total || Date.now()-started>30000){ ov.style.display='none'; done(); }
     else { setTimeout(tryDone, 60); }
   }
   for(var i=0;i<assets.length;i++){ (function(s){

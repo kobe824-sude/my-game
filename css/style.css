@@ -1154,6 +1154,9 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
 #levelLoadOv .lloBar{width:220px;height:12px;background:#1c2735;border-radius:8px;overflow:hidden;margin:14px auto 8px;border:1px solid #fff5;}
 #levelLoadOv .lloFill{height:100%;width:0%;background:linear-gradient(90deg,#ffd43b,#ff7b25);transition:width .2s;}
 #levelLoadOv .lloText{font-size:14px;color:#ffd86b;}
+/* V1.13 加载框小提示：标题 + 进度条 + 小窍门 */
+#levelLoadOv .lloTitle{font-size:22px;color:#fff;font-weight:bold;margin-bottom:6px;text-shadow:1px 1px 4px #000;}
+#levelLoadOv .lloTip{font-size:13px;color:#9fd4ff;margin-top:14px;max-width:300px;line-height:1.6;background:rgba(63,169,245,.12);border:1px solid rgba(159,212,255,.35);border-radius:10px;padding:8px 12px;}
 
 
 /* V1.1 新敌人登场弹窗 */
