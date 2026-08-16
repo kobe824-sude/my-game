@@ -5213,7 +5213,7 @@ function drawQRockets(){
    const r = qRockets[i];
    let dx=r.x, dy=r.y;
    // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
-   if(performance.now() - (r.born||0) < 80){ const p=youngMuzzle(r.dir, 110, dx, dy); dx=p.x; dy=p.y; }
+   if(performance.now() - (r.born||0) < 120){ const p=youngMuzzle(r.dir, 110, dx, dy); dx=p.x; dy=p.y; }
    const img=_qPool[i];
    img.style.left=dx+'px';
    img.style.bottom=dy+'px';
@@ -5438,7 +5438,7 @@ function drawBullets(){
         const b = catBullets[i];
         let dx=b.x, dy=b.y;
         // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
-        if(performance.now() - (b.born||0) < 80){ const p=youngMuzzle(b.dir, 72, dx, dy); dx=p.x; dy=p.y; }
+        if(performance.now() - (b.born||0) < 120){ const p=youngMuzzle(b.dir, 72, dx, dy); dx=p.x; dy=p.y; }
         const img=_bPool[i];
         img.src=bulletImgSrc();
         img.style.left=dx+"px";
