@@ -5082,7 +5082,7 @@ function useQRocket(){
     const face=window.miaoCatFace||1;
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保火箭从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
-    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false });
+    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false, born: performance.now() });
     setTimeout(()=>{qReady=true;},qc);
 }
 
@@ -5154,10 +5154,41 @@ function updateQRockets(){
  qRockets=qRockets.filter(r=>!r.dead);
 }
 
+// V15.19 无缝首帧保障：从猫当前实际渲染位置算出发射点（与飞行起点完全一致，杜绝卡顿时首帧被跳过/偏移）
+function youngMuzzle(dir, w, fx, fy){
+  try{
+    const pr = playerImg && playerImg.getBoundingClientRect ? playerImg.getBoundingClientRect() : null;
+    const grEl = document.getElementById('game');
+    const gr = grEl ? grEl.getBoundingClientRect() : null;
+    if(pr && gr && pr.width && pr.height){
+      const inset = Math.min(24, Math.round(w*0.3));
+      const pw = pr.width;
+      const gameX = (dir > 0 ? (pr.right - inset) : (pr.left - (w - inset))) - gr.left;
+      const gameY = (gr.top + gr.height - pr.bottom) + 20; // 与 getMuzzleY 完全一致
+      return { x: gameX, y: gameY };
+    }
+  }catch(e){}
+  return { x: fx, y: fy };
+}
+
+// V15.19 子弹/火箭元素复用池：减少每帧创建/销毁 DOM 造成的卡顿
+let _qPool = [];
 function drawQRockets(){
- document.querySelectorAll('.qRocket').forEach(e=>e.remove());
- const gameEl = document.getElementById('game');
- qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=qRocketImgSrc();img.style.position='absolute';img.style.left=r.x+'px';img.style.bottom=r.y+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);});
+ const gameEl = document.getElementById('game') || document.body;
+ const n = qRockets.length;
+ while (_qPool.length < n) { const img=document.createElement('img'); img.className='qRocket'; img.style.position='absolute'; img.style.width='110px'; img.style.height='80px'; gameEl.appendChild(img); _qPool.push(img); }
+ for(let i=0;i<n;i++){
+   const r = qRockets[i];
+   let dx=r.x, dy=r.y;
+   // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
+   if(performance.now() - (r.born||0) < 80){ const p=youngMuzzle(r.dir, 110, dx, dy); dx=p.x; dy=p.y; }
+   const img=_qPool[i];
+   img.style.left=dx+'px';
+   img.style.bottom=dy+'px';
+   img.style.transform='scaleX('+(r.dir>0?1:-1)+')';
+   if(img.parentNode!==gameEl) gameEl.appendChild(img);
+ }
+ while (_qPool.length > n) { const img=_qPool.pop(); if(img.parentNode) img.parentNode.removeChild(img); }
 }
 
 // V15.18 子弹/火箭发射点：与玩家同一坐标系（#game 内绝对定位），从猫的身体旁边打出
@@ -5188,7 +5219,7 @@ function shootBullet(){
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保子弹从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
 
-    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false });
+    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false, born: performance.now() });
 
     setTimeout(()=>{
         canShoot=true;
@@ -5365,23 +5396,25 @@ function updateBullets(){
     catBullets = catBullets.filter(b=>!b.dead);
 }
 
+let _bPool = [];
 function drawBullets(){
     drawQRockets();
-    document.querySelectorAll(".catBullet").forEach(e=>e.remove());
-    const gameEl = document.getElementById('game');
-
-    catBullets.forEach(b=>{
-        let img=document.createElement("img");
-        img.className="catBullet";
+    const gameEl = document.getElementById('game') || document.body;
+    const n = catBullets.length;
+    while (_bPool.length < n) { const img=document.createElement("img"); img.className="catBullet"; img.style.position="absolute"; img.style.width="72px"; img.style.height="72px"; gameEl.appendChild(img); _bPool.push(img); }
+    for(let i=0;i<n;i++){
+        const b = catBullets[i];
+        let dx=b.x, dy=b.y;
+        // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
+        if(performance.now() - (b.born||0) < 80){ const p=youngMuzzle(b.dir, 72, dx, dy); dx=p.x; dy=p.y; }
+        const img=_bPool[i];
         img.src=bulletImgSrc();
-        img.style.position="absolute";
-        img.style.left=b.x+"px";
-        img.style.bottom=b.y+"px";
-        img.style.width="72px";
-        img.style.transform = "scaleX(" + (b.dir>0?1:-1) + ")"; // 朝左发射时子弹图片也跟着朝左
-        img.style.height="72px";
-        (gameEl||document.body).appendChild(img);
-    });
+        img.style.left=dx+"px";
+        img.style.bottom=dy+"px";
+        img.style.transform = "scaleX(" + (b.dir>0?1:-1) + ")";
+        if(img.parentNode!==gameEl) gameEl.appendChild(img);
+    }
+    while (_bPool.length > n) { const img=_bPool.pop(); if(img.parentNode) img.parentNode.removeChild(img); }
 }
 
 // Player Series V1.0 玩家基础框架
