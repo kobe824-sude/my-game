@@ -46,7 +46,9 @@
   }
   holdMove('a', L); holdMove('d', R);
 
-  if(J) J.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(playerDead || gameEnded) return; if(jumpCount < currentMaxJumps){ playerVelocityY = -currentJumpPower; jumpCount++; onGround=false; } });
+  // V1.12 手机端跳跃力度缩小（主角变小，跳太高会出屏幕）：一段跳约94px（能躲奶蛙波），二段跳约188px
+  function jumpMobilePower(){ return Math.round(currentJumpPower * (window.jumpMobileScale ? window.jumpMobileScale() : 1)); }
+  if(J) J.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(playerDead || gameEnded) return; if(jumpCount < currentMaxJumps){ playerVelocityY = -jumpMobilePower(); jumpCount++; onGround=false; } });
   if(A) A.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(window.l15LockControls || window.gamePaused) return; if(activeCharacter==='daodungou'){ if(window.DOG) window.DOG.meleeAttack(); } else { shootBullet(); } });
   if(D) D.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(window.l15LockControls || window.gamePaused) return; useDash(); });
   if(P) P.addEventListener('pointerdown', function(ev){ ev.preventDefault(); togglePause(); });

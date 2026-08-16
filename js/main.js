@@ -4999,6 +4999,9 @@ function bulletMobileScale(){ return ('ontouchstart' in window || (navigator.max
 window.bulletMobileScale = bulletMobileScale;
 // 手机端发射点更低（主角变小后上抬量按比例缩小，避免子弹悬空打不到敌人）
 function muzzleYOffset(){ return Math.round(20 * bulletMobileScale()); }
+// V1.12 手机端跳跃力度缩放：主角变小后跳太高会出屏幕，一段跳约94px（能躲奶蛙波），二段约188px
+function jumpMobileScale(){ return ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.72 : 1; }
+window.jumpMobileScale = jumpMobileScale;
 function bulletSize(){ return Math.round(72 * bulletMobileScale()); }
 function qRocketW(){ return Math.round(110 * bulletMobileScale()); }
 function qRocketH(){ return Math.round(80 * bulletMobileScale()); }
@@ -5442,7 +5445,8 @@ function useDash(){
     const dir=window.miaoCatFace||1;
     // 妙脆角猫突进更远；刀盾狗突进较短；右键升级后按一次触发两段
     const stages = (window.inventory && window.inventory.rightClickUpgrade === true) ? 2 : 1; // 必须购买右键双段才生效
-    const stageDist = isCat ? 320 : 220;
+    // V1.12 突进距离按屏幕宽度比例：一段≈1/4屏（手机390→98px，桌面1280→320不变），两段≈半屏
+    const stageDist = Math.round(window.innerWidth * (isCat ? 0.25 : 0.17));
     let stage = 0;
     let hitIds = {};
     const dashAoe = !!(window.inventory && window.inventory.dashAoeUpgrade === true); // 闪避升级：购买后命中冲刺轨迹上所有敌人
@@ -5647,7 +5651,7 @@ window.addEventListener("keydown",(e)=>{
         if(k==="r" && su.r) startRAim();
     }
     if((e.code==="Space") && jumpCount < currentMaxJumps && !playerDead && !gameEnded){
-        playerVelocityY = -currentJumpPower;
+        playerVelocityY = -Math.round(currentJumpPower * (typeof jumpMobileScale==='function' ? jumpMobileScale() : 1));
         jumpCount++;
         onGround = false;
     }
