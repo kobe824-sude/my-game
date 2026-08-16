@@ -5164,7 +5164,9 @@ function drawQRockets(){
 // 玩家渲染: left=enemy.x, bottom=100-playerY → 子弹/火箭也用相同基准，杜绝任何坐标偏移
 function getMuzzleX(face, w){
   const inset = Math.min(24, Math.round(w*0.3));
-  return enemy.x + (face > 0 ? (100 - inset) : -(w - inset));
+  // 用玩家实际渲染宽度（手机端人物缩小后也能从猫身边打出）
+  const pw = (playerImg && playerImg.clientWidth) || 100;
+  return enemy.x + (face > 0 ? (pw - inset) : -(w - inset));
 }
 function getMuzzleY(){
   return (100 - playerY) + 20;
