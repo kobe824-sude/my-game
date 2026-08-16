@@ -5052,7 +5052,7 @@ function useQRocket(){
     const face=window.miaoCatFace||1;
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保火箭从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
-    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false });
+    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false, born: performance.now() });
     setTimeout(()=>{qReady=true;},qc);
 }
 
@@ -5124,10 +5124,33 @@ function updateQRockets(){
  qRockets=qRockets.filter(r=>!r.dead);
 }
 
+// V15.19 出生保护：子弹/火箭刚出生的约120ms内，强制绘制在猫当前实际位置旁边
+// （防止卡顿时子弹首帧被跳过、看起来像从远处飞来的问题）
+function youngDrawPos(dir, w, fallbackX, fallbackY){
+  try{
+    const pr = playerImg && playerImg.getBoundingClientRect ? playerImg.getBoundingClientRect() : null;
+    const grEl = document.getElementById('game');
+    const gr = grEl ? grEl.getBoundingClientRect() : null;
+    if(pr && gr && pr.width && pr.height){
+      const inset = Math.min(24, Math.round(w*0.3));
+      const screenX = dir > 0 ? (pr.right - inset) : (pr.left - (w - inset));
+      const screenY = pr.top + pr.height * 0.4;
+      const gameX = screenX - gr.left;
+      const gameBottom = gr.top + gr.height - (screenY + w);
+      return { x: gameX, y: gameBottom };
+    }
+  }catch(e){}
+  return { x: fallbackX, y: fallbackY };
+}
+
 function drawQRockets(){
  document.querySelectorAll('.qRocket').forEach(e=>e.remove());
  const gameEl = document.getElementById('game');
- qRockets.forEach(r=>{let img=document.createElement('img');img.className='qRocket';img.src=Q_ROCKET_IMAGE;img.style.position='absolute';img.style.left=r.x+'px';img.style.bottom=r.y+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);});
+ qRockets.forEach(r=>{
+   let dx=r.x, dy=r.y;
+   if(performance.now() - (r.born||0) < 120){ const p=youngDrawPos(r.dir, 110, r.x, r.y); dx=p.x; dy=p.y; }
+   let img=document.createElement('img');img.className='qRocket';img.src=Q_ROCKET_IMAGE;img.style.position='absolute';img.style.left=dx+'px';img.style.bottom=dy+'px';img.style.width='110px';img.style.height='80px';img.style.transform='scaleX('+(r.dir>0?1:-1)+')';(gameEl||document.body).appendChild(img);
+ });
 }
 
 // V15.18 子弹/火箭发射点：与玩家同一坐标系（#game 内绝对定位），从猫的身体旁边打出
@@ -5156,7 +5179,7 @@ function shootBullet(){
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保子弹从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
 
-    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false });
+    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false, born: performance.now() });
 
     setTimeout(()=>{
         canShoot=true;
@@ -5337,12 +5360,14 @@ function drawBullets(){
     const gameEl = document.getElementById('game');
 
     catBullets.forEach(b=>{
+        let dx=b.x, dy=b.y;
+        if(performance.now() - (b.born||0) < 120){ const p=youngDrawPos(b.dir, 72, b.x, b.y); dx=p.x; dy=p.y; }
         let img=document.createElement("img");
         img.className="catBullet";
         img.src=BULLET_IMAGE;
         img.style.position="absolute";
-        img.style.left=b.x+"px";
-        img.style.bottom=b.y+"px";
+        img.style.left=dx+"px";
+        img.style.bottom=dy+"px";
         img.style.width="72px";
         img.style.transform = "scaleX(" + (b.dir>0?1:-1) + ")"; // 朝左发射时子弹图片也跟着朝左
         img.style.height="72px";
