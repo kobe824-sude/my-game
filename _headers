@@ -1,0 +1,9 @@
+# 微信/QQ 内置浏览器缓存很顽固，给核心资源加"不缓存/每次校验"，确保每次都能拿到最新版
+/js/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+/css/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
