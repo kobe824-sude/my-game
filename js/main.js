@@ -4639,10 +4639,35 @@ function playLevel(idx){
   if(window.selectMode==='hard' && !(window.accountCleared && window.accountCleared[idx])){
     alert('请先通关该关卡的普通模式，再挑战困难！'); return;
   }
+  // V1.4 第16关高难度警告（优先级最高，先弹警告，玩家确认后再进选角；进入关卡后Boss介绍弹窗自然跟随）
+  if(idx===15){
+    showHardLevelWarning(idx);
+    return;
+  }
   // 新流程：点击关卡后进入选角色界面，选好后开始本关
   window.pendingLevel = idx;
   showCharacterSelect('第' + (idx+1) + '关');
 }
+function showHardLevelWarning(idx){
+  const old=document.getElementById('hardLevelWarn'); if(old) old.remove();
+  const ov=document.createElement('div');
+  ov.id='hardLevelWarn'; ov.className='hardLevelWarn';
+  ov.innerHTML='<div class="hlwCard"><div class="hlwTitle">⚠️ 高难度关卡</div>'+
+    '<div class="hlwText">第16关是 <b>Boss关</b>，难度很高！<br>建议先把角色的<b>面板数值</b>提升高一些（生命/攻击/天赋/技能升级），再来挑战。</div>'+
+    '<div class="hlwBtns"><button class="hlwGo" onclick="confirmHardLevel('+idx+')">💪 我准备好了，继续挑战</button>'+
+    '<button class="hlwBack" onclick="closeHardLevelWarn()">◀ 先回去升级</button></div></div>';
+  document.body.appendChild(ov);
+}
+function confirmHardLevel(idx){
+  const el=document.getElementById('hardLevelWarn'); if(el) el.remove();
+  window.pendingLevel = idx;
+  showCharacterSelect('第' + (idx+1) + '关');
+}
+function closeHardLevelWarn(){
+  const el=document.getElementById('hardLevelWarn'); if(el) el.remove();
+}
+window.confirmHardLevel = confirmHardLevel;
+window.closeHardLevelWarn = closeHardLevelWarn;
 window.playLevel = playLevel;
 function toggleLevelMode(){
   if((window.accountMaxUnlocked||1) <= 1){ alert('先通关第1关，再挑战困难模式吧！'); return; }
@@ -4661,8 +4686,9 @@ function renderLevelSelect(){
     const unlocked = i <= maxUnlocked;
     // 打勾跟随当前模式：普通看普通通关，困难看困难通关；15关普通看剧情是否已看（重置剧情后勾消失），困难不显示勾
     const isBossLv = LEVELS[i-1] && LEVELS[i-1].flag==='boss';
+    // V1.4 第16关打勾以"真正通关"为准：失败/中途退出不算完成（不再用看过剧情判断）
     const cleared = isBossLv
-      ? (window.selectMode==='hard' ? false : !!window.accountL15Seen)
+      ? (window.selectMode==='hard' ? false : !!(window.accountCleared && window.accountCleared[i-1]))
       : (window.selectMode==='hard')
         ? !!(window.accountHardCleared && window.accountHardCleared[i-1])
         : !!(window.accountCleared && window.accountCleared[i-1]);

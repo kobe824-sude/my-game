@@ -5,6 +5,9 @@
 
   var $=function(id){ return document.getElementById(id); };
   var L=$('mcLeft'), R=$('mcRight'), J=$('mcJump'), A=$('mcAtk'), D=$('mcDash'), E=$('mcE'), Q=$('mcQ'), Rbtn=$('mcR'), P=$('mcPause');
+  // V1.4 手机控制区禁止右键菜单（否则长按移动键会触发右键→冲刺）
+  var mcWrap = $('mobileControls');
+  if(mcWrap){ mcWrap.addEventListener('contextmenu', function(ev){ ev.preventDefault(); ev.stopPropagation(); }); }
 
   // 左右移动：按下/松开映射到 keys['a']/keys['d']
   function holdMove(key, el){
