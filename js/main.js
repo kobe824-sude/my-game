@@ -1515,7 +1515,7 @@ const CODEX_DATA = {
   boost: { name:"怪物强化（第15/20关起）", img:"⚠️", text:"从第15关起，奶家人攻击有几率（10%起步、每关+2%、上限30%）穿透护盾直接伤到本体；从第20关起，攻击对护盾造成的伤害翻倍，且整体伤害大幅提升（噩梦等难度下更强）。此强化在闯关与无限模式都生效；闪避无敌、跳得够高可以躲开。第50波还会直面削弱版怒岚。" },
   ult: { name:"R 大招 · 终极技能升级", img:"🚀", text:"R 大招·终极技能在第16关由宗主（神秘人）救场时传授。妙脆角猫的R是火箭雨（初始6发，每发25伤害）；刀盾狗的R是龙卷风（持续3秒，总伤害100，主要聚怪）。两者大招初始冷却都是90秒，疾风天赋/依石等冷却缩减会同步生效（主角面板与战斗中显示一致）。在「技能升级」里升级「大招强化」：每级伤害+8%；升到第5级解锁特殊强化——妙脆角猫：单发伤害再+20%且火箭+2发（共8发）；刀盾狗：总伤害再+20%、持续+2秒、并对卷到的敌人眩晕2秒。目前最高升到9级，第10级需要稀有材料。用法：妙脆角猫按住R键并移动鼠标调整红色预选圈位置，松开R后导弹会从红圈处落下；刀盾狗按R直接向前释放龙卷风，卷住敌人持续扣血并聚怪。" },
   special15: { name:"特殊剧情·存活90秒", img:"⏱️", text:"第16关第一场是完全体怒岚（10万血），撑过90秒会被「剧情杀·暗影湮灭」带走——这是躲不掉的剧情（成就：没办法，剧情杀）；如果在90秒内被击败，神秘人会现身救场，削弱怒岚并传授大招（成就：力不从心）。首次通关16关（90秒内被击败）回到主界面，会提示你去「重新体验剧情」再挑战一次90秒存活。在躺平模式下，宗主赐福会大幅加强（血量×10、伤害提升、Boss血砍半），总能磨死Boss。" },
-  growth: { name:"天赋点/技能升级/难度模式", img:"🌳", text:"通关获得天赋点，可在天赋树升级；技能升级消耗金币强化技能；角色等级随通关提升血量与基础伤害。设置里的难度模式：躺平(奖励50%)/普通/高手(奖励200%)/噩梦(奖励300%)，敌人越难奖励越高。" },
+  growth: { name:"天赋点/技能升级/难度模式", img:"🌳", text:"<b>天赋点怎么获得：</b><br>① 每累计通关 <b>2 个困难关卡</b> 获得 1 个天赋点（困难模式才有此加成）；<br>② 通关 <b>第2/8/10/12/14/15/16关</b>（普通模式首次通关）也会各获得 1 个天赋点；<br>③ 部分特殊关卡同样给天赋点。<br>天赋点在「天赋树」升级角色（生命/攻击/冷却/护盾/暴击等）。技能升级消耗金币强化技能；角色等级随通关提升血量与基础伤害。设置里的难度模式：躺平(奖励50%)/普通/高手(奖励200%)/噩梦(奖励300%)，敌人越难奖励越高。" },
   controls: { name:"🎮 按键操作说明", img:"🎮", text:"<b>移动：</b>A / D 或 ← / →<br><b>跳跃：</b>空格（可二段跳）<br><b>普攻：</b>鼠标左键<br><b>闪避突进：</b>鼠标右键（购买右键升级后按一次触发两段）<br><b>E 技能：</b>妙脆角猫回复生命 / 刀盾狗举盾护盾<br><b>Q 技能：</b>妙脆角猫爆炸火箭 / 刀盾狗旋风斩<br><b>R 大招：</b>猫：按住R移动鼠标调整红色预选圈，松开后火箭从红圈处落下；狗：按R释放龙卷风聚怪持续伤害<br><b>Tab：</b>打开/关闭背包<br><b>Esc：</b>暂停 / 逐层关闭当前界面<br>更多功能（技能升级、天赋、图鉴、成就等）都在主界面按钮中，训练营可免费练习所有连招。" }
 };
 window.CODEX_DATA = CODEX_DATA;
@@ -2576,7 +2576,7 @@ function l15Init(){
     window.l15Phase = 1;
     boss.phase = 1;
     boss.hp = 100000; boss.maxHp = 100000;
-    boss.img.style.width = "440px"; boss.img.style.height = "440px";
+    boss.img.style.width = Math.round(440*enemyMobileScale())+"px"; boss.img.style.height = Math.round(440*enemyMobileScale())+"px";
     updateEnemyHp(boss);
     l15OpeningStory();
   } else {
@@ -2587,7 +2587,7 @@ function l15Init(){
     boss.replayWeak = true;
     const replayHp = window.levelMode==='hard' ? 6000 : 3600;
     boss.hp = Math.round(replayHp * (easyMode3?0.5:1)); boss.maxHp = boss.hp; // 普通3600 / 困难6000 / 躺平1800
-    boss.img.style.width = "300px"; boss.img.style.height = "300px";
+    boss.img.style.width = Math.round(300*enemyMobileScale())+"px"; boss.img.style.height = Math.round(300*enemyMobileScale())+"px";
     boss.annihilNext = Date.now() + 60000; // 重玩：削弱版Boss每60秒才放大招
     updateEnemyHp(boss);
     showStoryHint(window.levelMode==='hard' ? '第16关·困难（重玩）：怒岚已被大幅削弱（6000血），直接挑战！' : '第16关·重玩：怒岚已被大幅削弱（3600血），直接挑战！');
@@ -3322,6 +3322,9 @@ function enemyLevelHpScale(){
   return 1 + ((typeof currentLevel!=='undefined' ? currentLevel : 0)) * 0.03;
 }
 window.enemyLevelHpScale = enemyLevelHpScale;
+// V1.8 手机端敌人整体缩小（主角小，敌人也要小）
+function enemyMobileScale(){ return ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.62 : 1; }
+window.enemyMobileScale = enemyMobileScale;
 function makeEnemy(ec, x, groundY){
   window.__eid = (window.__eid||0)+1;
   const e = {
@@ -3341,9 +3344,11 @@ function makeEnemy(ec, x, groundY){
   const img = document.createElement("img");
   img.className = "enemyImg";
   img.src = enemyImgSrc(e,'walk');
-  if(ec.type === "elite"){ img.style.width = "210px"; img.style.height = "210px"; }
-  else if(ec.type === "mouse"){ img.style.width = ec.elite ? "160px" : "110px"; img.style.height = ec.elite ? "160px" : "110px"; }
-  else if(ec.type === "boom"){ img.style.width = ec.elite ? "180px" : "150px"; img.style.height = ec.elite ? "180px" : "150px"; }
+  var msE = enemyMobileScale(); // V1.8 手机端敌人调小
+  if(ec.type === "elite"){ img.style.width = Math.round(210*msE)+"px"; img.style.height = Math.round(210*msE)+"px"; }
+  else if(ec.type === "mouse"){ img.style.width = Math.round((ec.elite?160:110)*msE)+"px"; img.style.height = Math.round((ec.elite?160:110)*msE)+"px"; }
+  else if(ec.type === "boom"){ img.style.width = Math.round((ec.elite?180:150)*msE)+"px"; img.style.height = Math.round((ec.elite?180:150)*msE)+"px"; }
+  else { img.style.width = Math.round(160*msE)+"px"; img.style.height = Math.round(160*msE)+"px"; } // 普通奶蛙
   img.style.left = e.x + "px";
   document.getElementById("game").appendChild(img);
   e.img = img;
@@ -3602,7 +3607,7 @@ function spawnScarecrow(){
   const img = document.createElement('img');
   img.className = 'enemyImg scarecrowImg';
   img.src = SCARECROW_IMAGE;
-  img.style.width = '150px'; img.style.height = '210px';
+  img.style.width = Math.round(150*enemyMobileScale())+'px'; img.style.height = Math.round(210*enemyMobileScale())+'px';
   const e = {
     uid: (window.__eid = (window.__eid||0)+1),
     x: window.innerWidth*0.5, hp: 999999999, maxHp: 999999999,

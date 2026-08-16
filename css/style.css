@@ -1089,21 +1089,22 @@ img{ -webkit-user-drag:none; user-drag:none; }
   /* 右侧：扇形（攻击为中心，跳跃在攻击上方，其余环绕） */
   #mobileControls .mcRight{position:absolute;right:12px;bottom:14px;display:block;width:215px;height:220px;pointer-events:none;}
   #mcAtk{position:absolute;right:64px;bottom:6px;width:86px;height:86px;font-size:32px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #ffe08a, #ff9d2e 60%, #f4761e);color:#7a3c00;border:3px solid rgba(255,255,255,.9);box-shadow:0 4px 0 rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.35);}
-  #mcJump{position:absolute;right:66px;bottom:100px;width:56px;height:56px;font-size:22px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #b8ff9e, #4fcb3f 60%, #2e9e22);color:#123d09;border:3px solid rgba(255,255,255,.85);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
-  #mcDash{position:absolute;right:158px;bottom:22px;width:52px;height:52px;font-size:18px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #d7c2ff, #8a5cf6 60%, #6a3de0);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
-  #mcE{position:absolute;right:6px;bottom:22px;width:52px;height:52px;font-size:16px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
-  #mcQ{position:absolute;right:146px;bottom:110px;width:50px;height:50px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
-  #mcR{position:absolute;right:10px;bottom:110px;width:50px;height:50px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcJump{position:absolute;right:80px;bottom:100px;width:54px;height:54px;font-size:22px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #b8ff9e, #4fcb3f 60%, #2e9e22);color:#123d09;border:3px solid rgba(255,255,255,.85);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcDash{position:absolute;right:152px;bottom:24px;width:50px;height:50px;font-size:18px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #d7c2ff, #8a5cf6 60%, #6a3de0);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcE{position:absolute;right:12px;bottom:24px;width:50px;height:50px;font-size:16px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcQ{position:absolute;right:158px;bottom:104px;width:48px;height:48px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
+  #mcR{position:absolute;right:8px;bottom:104px;width:48px;height:48px;font-size:15px;pointer-events:auto;background:radial-gradient(circle at 35% 30%, #a8d8ff, #4a90e2 60%, #2a6bb8);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 4px 0 rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.3);}
   #mcPause{position:absolute;top:10px;right:10px;width:32px;height:32px;font-size:13px;pointer-events:auto;background:rgba(0,0,0,.55);color:#fff;border-radius:50%;border:2px solid rgba(255,255,255,.5);}
   /* 血条HUD缩小为左上角一小块 */
-  #playerHUD,#frogHUD{top:5px !important;padding:2px 5px !important;border-radius:7px;border-width:1px;min-width:0 !important;width:auto !important;font-size:9px !important;box-shadow:none !important;}
-  #playerHUD{left:5px !important;}
-  #frogHUD{right:5px !important;}
-  #playerHUD .title,#frogHUD .title{font-size:10px !important;margin:0 !important;line-height:1.1 !important;}
-  #playerHUD .hudBar,#frogHUD .hudBar{width:62px !important;height:6px !important;border-width:1px;margin:2px 0 0 !important;border-radius:6px;}
+  #playerHUD,#frogHUD{top:4px !important;padding:2px 4px !important;font-size:8px !important;border-radius:7px;border-width:1px;min-width:0 !important;width:auto !important;font-size:9px !important;box-shadow:none !important;}
+  #playerHUD{left:4px !important;}
+  #frogHUD{right:4px !important;}
+  #playerHUD .title,#frogHUD .title{font-size:9px !important;margin:0 !important;line-height:1.1 !important;}
+  #playerHUD .hudBar,#frogHUD .hudBar{width:46px !important;height:5px !important;border-width:1px;margin:2px 0 0 !important;border-radius:6px;}
   #playerHUD #playerHpText,#frogHUD #frogHudHp{font-size:8px !important;margin:1px 0 0 !important;}
-  #playerHUD .hornSlots img{width:11px !important;height:11px !important;margin:0 1px 0 0 !important;}
-  #playerHUD #cornText{font-size:8px !important;margin:1px 0 0 !important;}
+  #playerHUD .hornSlots img{width:9px !important;height:9px !important;margin:0 1px 0 0 !important;}
+  #playerHUD #cornText{font-size:7px !important;margin:1px 0 0 !important;}
+  #playerHUD #playerHpText,#playerHUD #dogShieldRow{display:none !important;} /* V1.8 手机隐藏次要行，压低面板 */
   #dogShieldRow .hudBar{width:62px !important;height:6px !important;}
   #skillBar{display:none !important;}
   #player{width:64px !important;height:64px !important;}
@@ -1146,3 +1147,6 @@ img{ -webkit-user-drag:none; user-drag:none; }
 
 /* V1.7 手机技能冷却数字（显示在扇形之上） */
 .cdNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;font-size:15px;font-weight:bold;color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;pointer-events:none;font-family:Arial,sans-serif;line-height:1;}
+
+/* V1.8 手机端敌人血条变小 */
+@media (pointer:coarse){ .enemyHpBox{width:44px !important;height:12px !important;font-size:9px !important;} }
