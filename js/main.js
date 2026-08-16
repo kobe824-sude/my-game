@@ -4545,7 +4545,7 @@ window.startUpdateLoop = startUpdateLoop;
 // V15.20 每关加载：进关卡前先等本关资源就绪（带进度条），杜绝进关卡瞬间卡顿导致子弹/贴图异常
 function levelLoadAssets(idx){
   var a=['assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/boom_frog/boom_frog.png','assets/ui/bg_scene.png'];
-  if((idx+1)===16){ a=a.concat(['assets/enemies/boss/boss1.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/ui/bg_boss1.png']); }
+  if((idx+1)===16){ a=a.concat(['assets/enemies/boss/boss1.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/ui/bg_boss1.png','assets/ui/teacher.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/warning_circle.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_smoke.png']); } // V1.3 含剧情老师图 + R大招红圈/火箭图
   return a;
 }
 function showLevelLoad(idx, done){
@@ -4567,6 +4567,11 @@ function showLevelLoad(idx, done){
       im.onload=one; im.onerror=one; im.src=s;
     }catch(e){ one(); }
   })(assets[i]); }
+  // V1.2 Boss关预载战斗音乐，避免战斗中BGM突然加载卡顿
+  if((idx+1)===16){
+    var bossAuds=['assets/audio/boss/boss_battle.mp3','assets/audio/boss/boss_bgm.mp3','assets/audio/boss/boss1_quake.mp3'];
+    for(var b=0;b<bossAuds.length;b++){ try{ var ba=new Audio(bossAuds[b]); ba.preload='auto'; ba.load(); }catch(e){} }
+  }
   upd(); tryDone();
 }
 window.showLevelLoad = showLevelLoad;
