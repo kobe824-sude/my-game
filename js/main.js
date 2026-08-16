@@ -4845,7 +4845,7 @@ function frogFlashHit(){
 // 玩家测试攻击 V8.8.1
 // V1.1.1 妙脆角猫远程普攻系统
 const BULLET_IMAGE = "assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png";
-const BULLET_SPEED = 3.0;
+const BULLET_SPEED = 3.6; // V15.18 子弹速度稍微加快
 const BULLET_DAMAGE = 25;
 const SHOOT_COOLDOWN = 2000;
 let canShoot = true;
@@ -5050,6 +5050,8 @@ function useQRocket(){
     qCooldownLeft=qc;
     window.qCooldownLeft=qc;
     const face=window.miaoCatFace||1;
+    // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保火箭从猫实际位置打出
+    if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
     qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false });
     setTimeout(()=>{qReady=true;},qc);
 }
@@ -5058,7 +5060,7 @@ function updateQRockets(){
  const gameEl = document.getElementById('game');
  const gr = gameEl ? gameEl.getBoundingClientRect() : { left:0, top:0, height: window.innerHeight };
  qRockets.forEach(r=>{
-   r.x += r.dir*3.6;
+   r.x += r.dir*4.1; // V15.18 Q火箭速度稍微加快
 
    // V1.5.2 Q火箭碰撞修复：
    // 火箭本体使用小碰撞箱，不再使用大范围X轴判断
@@ -5151,6 +5153,8 @@ function shootBullet(){
                        (window.miaoCatFace || 1));
 
     window.miaoCatFace = playerFace;
+    // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保子弹从猫实际位置打出
+    if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
 
     catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false });
 
