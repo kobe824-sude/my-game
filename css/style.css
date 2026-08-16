@@ -1135,8 +1135,11 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
   #playerHUD #playerHpText,#frogHUD #frogHudHp{font-size:8px !important;margin:1px 0 0 !important;}
   #playerHUD .hornSlots img{width:9px !important;height:9px !important;margin:0 1px 0 0 !important;}
   #playerHUD #cornText{font-size:7px !important;margin:1px 0 0 !important;}
-  #playerHUD #playerHpText,#playerHUD #dogShieldRow{display:none !important;} /* V1.8 手机隐藏次要行，压低面板 */
-  #dogShieldRow .hudBar{width:62px !important;height:6px !important;}
+  #playerHUD #playerHpText{display:none !important;} /* V1.8 手机隐藏次要行，压低面板 */
+  /* V1.11 手机端也显示护盾（狗E技能/护盾药）：紧凑小行，不再隐藏 */
+  #playerHUD #dogShieldRow{display:block !important;margin-top:2px;}
+  #dogShieldRow .shieldLabel{font-size:8px !important;margin-bottom:1px;}
+  #dogShieldRow .hudBar{width:46px !important;height:4px !important;}
   #skillBar{display:none !important;}
   #player{width:64px !important;height:64px !important;}
   /* 冷却扇形与数字 */
@@ -1179,5 +1182,11 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
 /* V1.7 手机技能冷却数字（显示在扇形之上） */
 .cdNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;font-size:15px;font-weight:bold;color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;pointer-events:none;font-family:Arial,sans-serif;line-height:1;}
 
+
+/* V1.11 手机端奶蛙冲击波随奶蛙同比例缩小（奶蛙 0.62 倍，波也 0.62 倍，位置在 JS 中同步降低） */
+@media (pointer:coarse){
+  .frogWave{width:20px !important;height:20px !important;}
+  .frogWave.elite{width:27px !important;height:27px !important;}
+}
 /* V1.8 手机端敌人血条变小 */
 @media (pointer:coarse){ .enemyHpBox{width:44px !important;height:12px !important;font-size:9px !important;} }

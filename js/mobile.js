@@ -102,22 +102,30 @@
   setInterval(syncMobileControls, 400);
   syncMobileControls();
 
-  // V1.7 手机技能按钮：扇形冷却遮罩 + 数字倒计时（带小数）+ 未解锁显示锁
+  // V1.11 手机技能/普攻/闪避按钮：扇形冷却遮罩 + 数字倒计时（带小数）+ 未解锁显示锁
+  // 普攻、闪避也有冷却数字（猫普攻2秒/狗普攻1秒/闪避3秒）
   var _cdTimer = setInterval(function(){
-    var defs = { mcQ:['Q', 'qCooldownLeft'], mcE:['E', 'healCooldownLeft'], mcR:['R', 'rCooldownLeft'] };
+    var isDog = (window.activeCharacter === 'daodungou');
+    var defs = [
+      { id:'mcAtk', label:'🐾', cdKey: isDog ? 'dogMeleeCooldownLeft' : 'shootCooldownLeft', locked:false, cdMax: isDog ? 1000 : 2000 },
+      { id:'mcDash', label:'💨', cdKey:'dashCooldownLeft', locked:false, cdMax: 3000 },
+      { id:'mcQ', label:'Q', cdKey: isDog ? 'dogSlashCooldownLeft' : 'qCooldownLeft', locked:false, cdMax: 60000 },
+      { id:'mcE', label:'E', cdKey: isDog ? 'dogShieldCooldownLeft' : 'healCooldownLeft', locked:false, cdMax: 40000 },
+      { id:'mcR', label:'R', cdKey: isDog ? 'dogTornadoCooldownLeft' : 'rCooldownLeft', locked:false, cdMax: 90000 }
+    ];
     var su = (typeof skillUnlocks === 'function') ? skillUnlocks() : {e:true,q:true,r:true};
-    for (var id in defs) {
+    for (var i=0;i<defs.length;i++){
+      var d = defs[i], id = d.id;
       var btn = document.getElementById(id);
       if (!btn) continue;
-      var label = defs[id][0], cdKey = defs[id][1];
-      var cd = window[cdKey] || 0;
+      var cd = window[d.cdKey] || 0;
       var locked = (id === 'mcQ' && !su.q) || (id === 'mcE' && !su.e) || (id === 'mcR' && !su.r);
       // 扇形遮罩
       if (!btn._cdEl) { btn._cdEl = document.createElement('div'); btn._cdEl.className = 'cdSector'; btn.appendChild(btn._cdEl); }
       // 数字层
       if (!btn._cdNum) { btn._cdNum = document.createElement('span'); btn._cdNum.className = 'cdNum'; btn.appendChild(btn._cdNum); }
+      var max = (cd > (btn._cdMax || 0)) ? cd : (btn._cdMax || d.cdMax || 1);
       if (cd > (btn._cdMax || 0)) btn._cdMax = cd;
-      var max = btn._cdMax || 1;
       var f = Math.min(1, cd / max);
       var deg = Math.max(0, Math.min(360, Math.round(360 * (1 - f))));
       btn._cdEl.style.background = 'conic-gradient(rgba(0,0,0,0) ' + deg + 'deg, rgba(0,0,0,.68) ' + deg + 'deg 360deg)';
@@ -130,7 +138,7 @@
         btn._cdNum.style.opacity = '1';
         btn._cdNum.style.fontSize = '15px';
       } else {
-        btn._cdNum.textContent = aiming ? 'R•瞄' : label;
+        btn._cdNum.textContent = aiming ? 'R•瞄' : d.label;
         btn._cdNum.style.opacity = '1';
         btn._cdNum.style.fontSize = '15px';
       }

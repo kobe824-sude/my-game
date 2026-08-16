@@ -23,10 +23,10 @@
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker03.png">
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker04.png">
 <link rel="preload" as="image" href="assets/enemies/milk_mouse/sprites/mouse_idle.png">
-<link rel="stylesheet" href="css/style.css?v=1.10">
+<link rel="stylesheet" href="css/style.css?v=1.11">
 </head>
 <body>
-<div id="verBadge" style="position:fixed;top:4px;right:6px;z-index:99999;color:rgba(255,255,255,.4);font-size:10px;pointer-events:none;background:rgba(0,0,0,.25);padding:1px 6px;border-radius:8px;">v1.10</div>
+<div id="verBadge" style="position:fixed;top:4px;right:6px;z-index:99999;color:rgba(255,255,255,.4);font-size:10px;pointer-events:none;background:rgba(0,0,0,.25);padding:1px 6px;border-radius:8px;">v1.11</div>
 <div id="loadingScreen"><div class="loadingBox">🐱 妙脆角猫与刀盾狗 🐶<div class="loadingBar"><div class="loadingFill"></div></div><div class="loadingText">正在加载，请稍候…</div></div></div><script>
 // V15.20 彻底预加载：进游戏前加载好全部图片+关键音效（像本地文件夹一样流畅），带进度显示，杜绝卡顿导致的子弹/贴图问题
 (function(){
@@ -35,7 +35,7 @@
   var txt=document.querySelector('.loadingText');
   var minShown=Date.now()+800;
   var startedAt=Date.now();
-  var MAX=60000; // v1.10 最多等待60秒：确保所有素材（含Boss战/剧情图）加载完再进游戏，避免边打边加载卡顿
+  var MAX=60000; // v1.11 最多等待60秒：确保所有素材（含Boss战/剧情图）加载完再进游戏，避免边打边加载卡顿
   var imgs=['assets/enemies/boom_frog/boom_frog.png','assets/enemies/boss/annihilation.png','assets/enemies/boss/boss1.png','assets/enemies/boss/dark_breath.png','assets/enemies/boss/quake_wave.png','assets/enemies/milk_frog/sprites/Alert.png','assets/enemies/milk_frog/sprites/Attack.png','assets/enemies/milk_frog/sprites/Dead.png','assets/enemies/milk_frog/sprites/Hurt.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_mouse/sprites/mouse_crouch.png','assets/enemies/milk_mouse/sprites/mouse_dead.png','assets/enemies/milk_mouse/sprites/mouse_idle.png','assets/players/daodungou/skills/blade/dog_blade.png','assets/players/daodungou/skills/R_tornado/tornado.png','assets/players/daodungou/skills/shield/shield_effect.png','assets/players/daodungou/sprites/daodungou_idle.png','assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_cat_rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/explosion_smoke.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/rocket.png','assets/players/miaocuijiao_cat/skills/R_rocket_rain/warning_circle.png','assets/players/miaocuijiao_cat/sprites/miaocat_bald.png','assets/players/miaocuijiao_cat/sprites/miaocat_idle.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/players/miaocuijiao_cat/sprites/miaocat_one.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/ui/bg_abyss_preview.png','assets/ui/bg_boss1.png','assets/ui/bg_scene.png','assets/ui/characters/teacher.jpg','assets/ui/icon-192.png','assets/ui/icon-512-maskable.png','assets/ui/icon-512.png','assets/ui/teacher.png'];
   var auds=['assets/audio/bgm/bgm.wav','assets/audio/players/miaocuijiao_cat/attack.wav','assets/audio/players/miaocuijiao_cat/hurt.wav','assets/audio/players/miaocuijiao_cat/rocket_explosion.wav','assets/audio/victory.wav','assets/audio/achievement.wav'];
   var total=imgs.length+auds.length, loaded=0;
@@ -196,15 +196,15 @@
   </div>
 </div>
 
-<script src="js/config.js?v=1.10"></script>
-<script src="js/enemy.js?v=1.10"></script>
-<script src="js/battle.js?v=1.10"></script>
-<script src="js/frogAI.js?v=1.10"></script>
-<script src="js/ui_v13.js?v=1.10"></script>
-<script src="js/R_RocketRain.js?v=1.10"></script>
-<script src="js/main.js?v=1.10"></script>
-<script src="js/player/DaodungouDog.js?v=1.10"></script>
-<script src="js/mobile.js?v=1.10"></script>
+<script src="js/config.js?v=1.11"></script>
+<script src="js/enemy.js?v=1.11"></script>
+<script src="js/battle.js?v=1.11"></script>
+<script src="js/frogAI.js?v=1.11"></script>
+<script src="js/ui_v13.js?v=1.11"></script>
+<script src="js/R_RocketRain.js?v=1.11"></script>
+<script src="js/main.js?v=1.11"></script>
+<script src="js/player/DaodungouDog.js?v=1.11"></script>
+<script src="js/mobile.js?v=1.11"></script>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });

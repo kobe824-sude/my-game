@@ -4192,8 +4192,9 @@ function createWave(e){
   // 蛙的高度（跳跃/站平台时从空中斜着打下来）
   const eH = (e.groundY || 0) + ((e.jumpY||0) < 0 ? -(e.jumpY) : 0);
   const pG = (typeof groundYAt==='function') ? groundYAt(enemy.x + 50) : 0;
-  let waveY = 190 + eH;
-  const waveTargetY = 190 + pG;
+  const _wS = enemyMobileScale(); // V1.11 奶蛙冲击波随奶蛙缩小并降低弹道高度
+  let waveY = Math.round(190 * _wS) + eH;
+  const waveTargetY = Math.round(190 * _wS) + pG;
   const speed = isElite ? WAVE_SPEED*0.75 : WAVE_SPEED;
   const distToPlayer = Math.abs(enemy.x - e.x);
   const frames = Math.max(12, distToPlayer / speed);
@@ -4211,9 +4212,10 @@ function createWave(e){
     wave.style.top = "calc(100% - " + waveY + "px)";
     const playerRect = enemyObj.getBoundingClientRect();
     const waveRect = wave.getBoundingClientRect();
+    const _wIn = Math.max(2, Math.round(waveRect.width*0.19));
     const hit = {
-      left: waveRect.left+6, right: waveRect.right-6,
-      top: waveRect.top+6, bottom: waveRect.bottom-6
+      left: waveRect.left+_wIn, right: waveRect.right-_wIn,
+      top: waveRect.top+_wIn, bottom: waveRect.bottom-_wIn
     };
     const overlapping = hit.left < playerRect.right && hit.right > playerRect.left &&
        hit.top < playerRect.bottom && hit.bottom > playerRect.top;
@@ -4991,7 +4993,16 @@ function frogFlashHit(){
 // 玩家测试攻击 V8.8.1
 // V1.1.1 妙脆角猫远程普攻系统
 const BULLET_IMAGE = "assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png";
-const BULLET_SPEED = 3.6; // V15.18 子弹速度稍微加快
+const BULLET_SPEED = 4.2; // V1.11 子弹速度加快（手机端更好命中）
+// V1.11 手机端子弹/火箭随主角同比例缩小（主角 100->64）：尺寸、发射点、碰撞箱统一缩放
+function bulletMobileScale(){ return ('ontouchstart' in window || (navigator.maxTouchPoints||0) > 0) ? 0.64 : 1; }
+window.bulletMobileScale = bulletMobileScale;
+// 手机端发射点更低（主角变小后上抬量按比例缩小，避免子弹悬空打不到敌人）
+function muzzleYOffset(){ return Math.round(20 * bulletMobileScale()); }
+function bulletSize(){ return Math.round(72 * bulletMobileScale()); }
+function qRocketW(){ return Math.round(110 * bulletMobileScale()); }
+function qRocketH(){ return Math.round(80 * bulletMobileScale()); }
+window.bulletSize = bulletSize; window.qRocketW = qRocketW; window.qRocketH = qRocketH;
 const BULLET_DAMAGE = 25;
 const SHOOT_COOLDOWN = 2000;
 let canShoot = true;
@@ -5231,7 +5242,7 @@ function useQRocket(){
     const face=window.miaoCatFace||1;
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保火箭从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
-    qRockets.push({ x: getMuzzleX(face, 110), y: getMuzzleY(), dir: face, dead:false, explode:false, born: performance.now() });
+    qRockets.push({ x: getMuzzleX(face, qRocketW()), y: getMuzzleY(), dir: face, dead:false, explode:false, born: performance.now() });
     setTimeout(()=>{qReady=true;},qc);
 }
 
@@ -5239,17 +5250,18 @@ function updateQRockets(){
  const gameEl = document.getElementById('game');
  const gr = gameEl ? gameEl.getBoundingClientRect() : { left:0, top:0, height: window.innerHeight };
  qRockets.forEach(r=>{
-   r.x += r.dir*4.1; // V15.18 Q火箭速度稍微加快
+   r.x += r.dir*4.6; // V1.11 Q火箭速度加快
 
    // V1.5.2 Q火箭碰撞修复：
    // 火箭本体使用小碰撞箱，不再使用大范围X轴判断
+   const _qw=qRocketW(), _qh=qRocketH();
    const rScreenLeft = gr.left + r.x;
-   const rScreenTop = gr.top + gr.height - r.y - 80;
+   const rScreenTop = gr.top + gr.height - r.y - _qh;
    const rocketHitbox = {
-      left: rScreenLeft + 18,
-      right: rScreenLeft + 55,
-      top: rScreenTop + 18,
-      bottom: rScreenTop + 55
+      left: rScreenLeft + Math.round(_qw*0.16),
+      right: rScreenLeft + Math.round(_qw*0.5),
+      top: rScreenTop + Math.round(_qh*0.225),
+      bottom: rScreenTop + Math.round(_qh*0.69)
    };
 
    // 命中检测：遍历所有存活敌人（Boss也能被打到），取第一个被火箭碰到/爆炸范围内的
@@ -5274,7 +5286,7 @@ function updateQRockets(){
       // 爆炸伤害范围单独处理（150px）
       const explosionRange = 260; // 大Boss也能被炸到
       const frogCenterX = hitEnemy.img.getBoundingClientRect().left + hitEnemy.img.getBoundingClientRect().width/2;
-      const rocketCenterX = rScreenLeft + 35;
+      const rocketCenterX = rScreenLeft + Math.round(qRocketW()*0.32);
 
       if(Math.abs(frogCenterX - rocketCenterX) <= explosionRange){
           const qDmg = doCrit((Q_DAMAGE + (window.playerAttackBuff||0)) * (1 + 0.05*((inventory.skillLevels&&(inventory.skillLevels.skillQ||inventory.skillLevels.skill))||0)));
@@ -5313,7 +5325,7 @@ function youngMuzzle(dir, w, fx, fy){
       const inset = Math.min(24, Math.round(w*0.3));
       const pw = pr.width;
       const gameX = (dir > 0 ? (pr.right - inset) : (pr.left - (w - inset))) - gr.left;
-      const gameY = (gr.top + gr.height - pr.bottom) + 20; // 与 getMuzzleY 完全一致
+      const gameY = (gr.top + gr.height - pr.bottom) + muzzleYOffset(); // 与 getMuzzleY 完全一致
       return { x: gameX, y: gameY };
     }
   }catch(e){}
@@ -5325,12 +5337,12 @@ let _qPool = [];
 function drawQRockets(){
  const gameEl = document.getElementById('game') || document.body;
  const n = qRockets.length;
- while (_qPool.length < n) { const img=document.createElement('img'); img.className='qRocket'; img.style.position='absolute'; img.style.width='110px'; img.style.height='80px'; gameEl.appendChild(img); _qPool.push(img); }
+ while (_qPool.length < n) { const img=document.createElement('img'); img.className='qRocket'; img.style.position='absolute'; img.style.width=qRocketW()+'px'; img.style.height=qRocketH()+'px'; gameEl.appendChild(img); _qPool.push(img); }
  for(let i=0;i<n;i++){
    const r = qRockets[i];
    let dx=r.x, dy=r.y;
    // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
-   if(performance.now() - (r.born||0) < 120){ const p=youngMuzzle(r.dir, 110, dx, dy); dx=p.x; dy=p.y; }
+   if(performance.now() - (r.born||0) < 120){ const p=youngMuzzle(r.dir, qRocketW(), dx, dy); dx=p.x; dy=p.y; }
    const img=_qPool[i];
   img.src = qRocketImgSrc(); // V1.1 修复：给火箭设置贴图（否则图标不显示）
    img.style.left=dx+'px';
@@ -5350,7 +5362,7 @@ function getMuzzleX(face, w){
   return enemy.x + (face > 0 ? (pw - inset) : -(w - inset));
 }
 function getMuzzleY(){
-  return (100 - playerY) + 20;
+  return (100 - playerY) + muzzleYOffset();
 }
 function shootBullet(){
     if(playerDead || (frog && frog.dead) || gameEnded || !canShoot) return; // frog 可能为空（切换/过渡时），防空引用
@@ -5369,7 +5381,7 @@ function shootBullet(){
     // V15.18 开火瞬间强制把猫贴图同步到 enemy.x，确保子弹从猫实际位置打出
     if(enemyObj){ enemyObj.style.left = enemy.x + "px"; }
 
-    catBullets.push({ x: getMuzzleX(playerFace, 72), y: getMuzzleY(), dir: playerFace, dead:false, born: performance.now() });
+    catBullets.push({ x: getMuzzleX(playerFace, bulletSize()), y: getMuzzleY(), dir: playerFace, dead:false, born: performance.now() });
 
     setTimeout(()=>{
         canShoot=true;
@@ -5525,12 +5537,13 @@ function updateBullets(){
         // V1.1.3: 子弹独立小范围碰撞箱，不受大贴图影响
         const frogRect = frogImg.getBoundingClientRect();
         const bScreenLeft = gr.left + b.x;
-        const bScreenTop = gr.top + gr.height - b.y - 72;
+        const _bsz = bulletSize();
+        const bScreenTop = gr.top + gr.height - b.y - _bsz;
         const hitbox = {
-            left: bScreenLeft + 12,
-            right: bScreenLeft + 44,
-            top: bScreenTop + 12,
-            bottom: bScreenTop + 44
+            left: bScreenLeft + Math.round(_bsz*0.17),
+            right: bScreenLeft + Math.round(_bsz*0.61),
+            top: bScreenTop + Math.round(_bsz*0.17),
+            bottom: bScreenTop + Math.round(_bsz*0.61)
         };
         if(typeof window.tryBreakBreakables==='function'){ tryBreakBreakables(12 + (charLevel()-1), b.x, 55); }
         if(frog && !frog.dead &&
@@ -5551,12 +5564,12 @@ function drawBullets(){
     drawQRockets();
     const gameEl = document.getElementById('game') || document.body;
     const n = catBullets.length;
-    while (_bPool.length < n) { const img=document.createElement("img"); img.className="catBullet"; img.style.position="absolute"; img.style.width="72px"; img.style.height="72px"; gameEl.appendChild(img); _bPool.push(img); }
+    while (_bPool.length < n) { const img=document.createElement("img"); img.className="catBullet"; img.style.position="absolute"; img.style.width=bulletSize()+"px"; img.style.height=bulletSize()+"px"; gameEl.appendChild(img); _bPool.push(img); }
     for(let i=0;i<n;i++){
         const b = catBullets[i];
         let dx=b.x, dy=b.y;
         // 无缝首帧保障：刚出生(约80ms内)强制从猫当前实际位置画出（与飞行起点同一坐标，看不出粘身）
-        if(performance.now() - (b.born||0) < 120){ const p=youngMuzzle(b.dir, 72, dx, dy); dx=p.x; dy=p.y; }
+        if(performance.now() - (b.born||0) < 120){ const p=youngMuzzle(b.dir, bulletSize(), dx, dy); dx=p.x; dy=p.y; }
         const img=_bPool[i];
         img.src=bulletImgSrc();
         img.style.left=dx+"px";
