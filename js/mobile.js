@@ -72,26 +72,19 @@
   }
   if(Rbtn){
     Rbtn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); rAimStart(); });
-    Rbtn.addEventListener('pointerup', function(ev){ ev.preventDefault(); rAimEnd(); });
-    Rbtn.addEventListener('pointercancel', function(){ rAimEnd(); });
-    Rbtn.addEventListener('pointerleave', function(){ rAimEnd(); });
   }
+  // V1.1 手机R大招拖动：按住后手指在屏幕任意位置拖动调整红圈，松开任意位置释放（与电脑版一致）
+  document.addEventListener('pointerup', function(ev){
+    if(rAimingMobile){ ev.preventDefault(); rAimEnd(); }
+  }, true);
+  document.addEventListener('pointercancel', function(){ if(rAimingMobile) rAimEnd(); }, true);
+  document.addEventListener('pointerleave', function(){ if(rAimingMobile) rAimEnd(); }, true);
   // 拖动调整 R 瞄准位置：灵敏度适中 + 限制在屏幕内（红圈中心不会拖出屏幕）
-  var _rAimLastX = null;
   document.addEventListener('pointermove', function(ev){
     if(rAimingMobile && window.rAiming && window.RRocketRain){
-      // 灵敏度：红圈移动量 = 手指移动量 * 0.75，避免一下拖出屏幕
-      var nx = ev.clientX;
-      if(_rAimLastX !== null){
-        var delta = (nx - _rAimLastX) * 0.75;
-        window.RRocketRain.targetX = Math.max(140, Math.min(window.innerWidth-140, (window.RRocketRain.targetX||window.innerWidth/2) + delta));
-      } else {
-        window.RRocketRain.targetX = Math.max(140, Math.min(window.innerWidth-140, nx));
-      }
-      _rAimLastX = nx;
+      // 灵敏度适中 + 限制在屏幕内（红圈中心不会拖出屏幕）
+      window.RRocketRain.targetX = Math.max(140, Math.min(window.innerWidth-140, ev.clientX));
       if(window.RRocketRain.updateWarning) window.RRocketRain.updateWarning();
-    } else {
-      _rAimLastX = null;
     }
   });
   // 兼容旧引用（其它代码可能调用 toggleRAim/skill('r')）

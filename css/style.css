@@ -685,8 +685,18 @@ input,textarea{ cursor:text; }
 #loginCard,#registerCard{display:block;}
 #registerWarn{color:#e85b4b;font-size:14px;margin-top:8px;display:none;text-shadow:none;}
 @media (max-width:1020px){
-  .loginSplit{flex-direction:column;align-items:center;gap:18px;flex-wrap:nowrap;justify-content:flex-start;}
-  .loginSplit .loginCard{width:94vw;}
+  .loginSplit{flex-direction:column;align-items:center;gap:10px;flex-wrap:nowrap;justify-content:flex-start;}
+  .loginSplit .loginCard{width:94vw;padding:14px 14px 16px;}
+  .loginTitle{font-size:24px;}
+  .loginSub{font-size:14px;margin-top:2px;}
+  .loginChars{display:none;} /* 手机端隐藏角色图，省高度 */
+  #login input{width:86%;font-size:16px;padding:10px 14px;margin:6px auto;}
+  #login button{font-size:17px;padding:10px 40px;margin-top:10px;}
+  #login .loginHint{font-size:11px;margin-top:8px;}
+  #login .loginRemember{font-size:12px;}
+  /* 手机端账号列表固定在登录卡底部、始终可见 */
+  #accountList{margin-top:8px;max-height:22vh;overflow-y:auto;}
+  #accountList .accItem{font-size:13px;padding:6px 8px;}
 }
 
 /* ===================== V5.9 选关 ===================== */

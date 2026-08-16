@@ -5217,6 +5217,7 @@ function startRAim(){
     if(playerDead || gameEnded || !rReady || !window.RRocketRain) return;
     if(!rAiming){
         rAiming = true;
+        window.rAiming = true; // V1.1 同步到window，供手机端拖动判断
         if(typeof enemy!=='undefined'){ window.RRocketRain.targetX = enemy.x; } // 红圈从主角当前位置开始
         rAimCircle = window.RRocketRain.createWarning();
     }
@@ -5232,6 +5233,7 @@ window.addEventListener("mousemove",(e)=>{
 function releaseRAim(){
     if(!rAiming || !window.RRocketRain) return;
     rAiming = false;
+    window.rAiming = false; // V1.1 同步到window
     window.RRocketRain.lockWarning();
     if(rAimCircle){
         window.RRocketRain.flashWarning(rAimCircle);
@@ -5413,19 +5415,19 @@ function updateQRockets(){
       bottom: rScreenTop + Math.round(_qh*0.69)
    };
 
-   // 命中检测：遍历所有存活敌人（Boss也能被打到），取第一个被火箭碰到/爆炸范围内的
+   // 命中检测：V1.1 改用游戏坐标(敌人.x)判断，避免每帧读 getBoundingClientRect 强制回流（手机卡顿优化）
    let hitEnemy = null;
+   const _rCenter = r.x + Math.round(_qw*0.33); // 火箭在游戏坐标系的中心
    if(typeof enemies!=='undefined'){
      for(const en of enemies){
        if(en && !en.dead && en.img){
-         const er = en.img.getBoundingClientRect();
-         if(rocketHitbox.left < er.right && rocketHitbox.right > er.left && rocketHitbox.top < er.bottom && rocketHitbox.bottom > er.top){ hitEnemy = en; break; }
+         const ew = en.img ? (en.img.clientWidth||100) : 100;
+         if(Math.abs(_rCenter - en.x) < Math.max(ew, _qw)){ hitEnemy = en; break; }
        }
      }
    }
    if(!hitEnemy && typeof frog!=='undefined' && frog && frog.img){
-     const fr = frog.img.getBoundingClientRect();
-     if(rocketHitbox.left < fr.right && rocketHitbox.right > fr.left && rocketHitbox.top < fr.bottom && rocketHitbox.bottom > fr.top){ hitEnemy = frog; }
+     if(Math.abs(_rCenter - frog.x) < Math.max(frog.img.clientWidth||100, _qw)){ hitEnemy = frog; }
    }
 
    if(!r.explode && hitEnemy){
@@ -5434,8 +5436,8 @@ function updateQRockets(){
 
       // 爆炸伤害范围单独处理（150px）
       const explosionRange = 260; // 大Boss也能被炸到
-      const frogCenterX = hitEnemy.img.getBoundingClientRect().left + hitEnemy.img.getBoundingClientRect().width/2;
-      const rocketCenterX = rScreenLeft + Math.round(qRocketW()*0.32);
+      const frogCenterX = _rCenter;
+      const rocketCenterX = _rCenter;
 
       if(Math.abs(frogCenterX - rocketCenterX) <= explosionRange){
           const qDmg = doCrit((Q_DAMAGE + (window.playerAttackBuff||0)) * (1 + 0.05*((inventory.skillLevels&&(inventory.skillLevels.skillQ||inventory.skillLevels.skill))||0)));
@@ -5682,11 +5684,13 @@ function updateBullets(){
     updateQRockets();
     const gameEl = document.getElementById('game');
     const gr = gameEl ? gameEl.getBoundingClientRect() : { left:0, top:0, height: window.innerHeight };
+    // V1.1 性能优化：每帧只读一次目标矩形（原先是每颗子弹都读，手机卡顿优化）
+    const frogRect = (frog && frog.img) ? frog.img.getBoundingClientRect() : null;
+    const _fw = frogRect ? frogRect.width : 0;
     catBullets.forEach(b=>{
         b.x += b.dir * BULLET_SPEED;
 
         // V1.1.3: 子弹独立小范围碰撞箱，不受大贴图影响
-        const frogRect = frogImg.getBoundingClientRect();
         const bScreenLeft = gr.left + b.x;
         const _bsz = bulletSize();
         const bScreenTop = gr.top + gr.height - b.y - _bsz;
@@ -5697,7 +5701,7 @@ function updateBullets(){
             bottom: bScreenTop + Math.round(_bsz*0.61)
         };
         if(typeof window.tryBreakBreakables==='function'){ tryBreakBreakables(12 + (charLevel()-1), b.x, 55); }
-        if(frog && !frog.dead &&
+        if(frog && !frog.dead && frogRect &&
            hitbox.left < frogRect.right &&
            hitbox.right > frogRect.left &&
            hitbox.top < frogRect.bottom &&
