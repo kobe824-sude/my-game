@@ -16,6 +16,7 @@
 <link rel="preload" as="image" href="assets/players/miaocuijiao_cat/sprites/miaocat_idle.png">
 <link rel="preload" as="image" href="assets/players/daodungou/sprites/daodungou_idle.png">
 <link rel="preload" as="image" href="assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png">
+<link rel="preload" as="image" href="assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png">
 <link rel="preload" as="image" href="assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png">
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker01.png">
 <link rel="preload" as="image" href="assets/enemies/milk_frog/sprites/Walker02.png">
@@ -34,6 +35,17 @@
   function done(){ if(Date.now()<minShown){ setTimeout(done, minShown-Date.now()); return; } hide(); }
   if(document.readyState==='complete'){ done(); }
   else { window.addEventListener('load', done); setTimeout(hide, 3500); }
+})();
+</script>
+<script>
+// V15.19 性能优化：后台预加载关键音效与贴图，避免进关卡/首次开枪时卡顿导致子弹第一帧被跳过
+(function(){
+  try{
+    var audios=['assets/audio/bgm/bgm.wav','assets/audio/players/miaocuijiao_cat/attack.wav','assets/audio/players/miaocuijiao_cat/hurt.wav','assets/audio/players/miaocuijiao_cat/rocket_explosion.wav','assets/audio/victory.wav'];
+    for(var i=0;i<audios.length;i++){ try{ var a=new Audio(audios[i]); a.preload='auto'; a.volume=0; }catch(e){} }
+    var imgs=['assets/players/miaocuijiao_cat/skills/Q/cat_bullet.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_right.png','assets/players/miaocuijiao_cat/sprites/miaocat_run_left.png','assets/players/miaocuijiao_cat/sprites/miaocat_jump.png','assets/enemies/milk_frog/sprites/Walker01.png','assets/enemies/milk_frog/sprites/Walker02.png','assets/enemies/milk_frog/sprites/Walker03.png','assets/enemies/milk_frog/sprites/Walker04.png','assets/enemies/milk_frog/sprites/Attack.png'];
+    for(var j=0;j<imgs.length;j++){ try{ var img=new Image(); img.src=imgs[j]; }catch(e){} }
+  }catch(e){}
 })();
 </script>
 
