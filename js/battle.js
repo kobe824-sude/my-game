@@ -2,6 +2,14 @@
 // 攻击、伤害、冲击波逻辑保持兼容
 
 function showDamageFloat(text,color='#fff',target=null){
+ // V1.0 伤害数字取整：避免出现 60.1111 这类小数
+ const _s=String(text);
+ if(/^[+-]?\d+(\.\d+)?$/.test(_s)){
+   const _neg=_s[0]==='-';
+   const _pos=_s[0]==='+';
+   const _n=Math.round(parseFloat(_s));
+   text=(_pos?'+':_neg?'-':'')+Math.abs(_n);
+ }
  let game=document.getElementById('game')||document.body;
  let el=document.createElement('div');
  el.className='damageFloat';
