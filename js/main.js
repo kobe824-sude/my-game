@@ -1606,17 +1606,19 @@ window.closeCodexDetail = closeCodexDetail;
 
 function skillUnlocks(){
   const lv = currentLevel+1;
+  // V1.0 E技能一旦解锁(进入第5关)就永久拥有：回打低关卡(1-4)也在，刀盾狗护盾和妙脆角猫回血都生效（原按当前关卡>=5判断，导致通关后回打1-4关E消失）
+  const eUnlocked = !!window.accountEUnlocked;
   // 无限模式跟随玩家当前拥有的技能：主角有什么，无限模式就有什么
   if(window.infiniteMode){
     return {
-      e: (window.accountMaxUnlocked||1) >= 5,
+      e: eUnlocked,
       q: !!window.accountQUnlocked,
       r: !!window.accountRUnlocked
     };
   }
   // 第16关第一场：大招还没获得（必须等老师救场传授后才解锁）
-  if(lv===16 && window.l15Phase===1){ return { e: lv>=5, q: !!window.accountQUnlocked, r: false }; }
-  return { e: lv>=5, q: !!window.accountQUnlocked, r: !!window.accountRUnlocked };
+  if(lv===16 && window.l15Phase===1){ return { e: eUnlocked, q: !!window.accountQUnlocked, r: false }; }
+  return { e: eUnlocked, q: !!window.accountQUnlocked, r: !!window.accountRUnlocked };
 }
 window.getSkillUnlocks = skillUnlocks;
 
