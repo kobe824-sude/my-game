@@ -3820,6 +3820,9 @@ function startInfiniteWave(){
   clearEnemies();
   levelCleared = false; gameEnded = false;
   const wave = window.infiniteWave || 1;
+  // 背景：第50波最终Boss用紫色Boss背景（与第16关一致），其他波用草原背景
+  const gEl = document.getElementById('game');
+  if(gEl) gEl.style.backgroundImage = (wave >= 50) ? "url('assets/ui/bg_boss1.png')" : "url('assets/ui/bg_scene.png')";
   // 第50波=最后一波：直面削弱版怒岚（冒险15关Boss的削弱版，会召唤小怪）
   if(wave >= 50){
     const boss = spawnBoss({ x:0.5, hp:10000 });
