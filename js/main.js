@@ -5640,6 +5640,19 @@ function stunDashTarget(tgt){
   setTimeout(()=>{ if(tgt && !tgt.dead){ tgt.stunned = false; } }, 500);
 }
 window.stunDashTarget = stunDashTarget;
+// V1.0 冲刺高度判定：玩家跳太高时冲刺打不到地面敌人（避免在空中冲刺命中地上的奶蛙）
+function dashHeightOk(tgt){
+  try{
+    const pHeight = -((typeof playerY!=='undefined') ? playerY : 0);
+    let eHeight = (tgt && tgt.groundY) || 0;
+    if(tgt && tgt.img && tgt.img.style && tgt.img.style.bottom){
+      const b = parseFloat(tgt.img.style.bottom);
+      if(!isNaN(b) && b > 80){ eHeight = b - 80; }
+    }
+    return (pHeight - eHeight) < 150; // 玩家与敌人高度差在150px内才命中
+  }catch(e){ return true; }
+}
+window.dashHeightOk = dashHeightOk;
 function useDash(){
     if(playerDead || gameEnded || (frog && frog.dead) || !dashReady || dashActive) return;
     // 时缓：按右键闪避，规避Boss大招这次伤害
@@ -5682,7 +5695,7 @@ function useDash(){
               for(const tgt of targets){
                 if(!tgt || hitIds[tgt.uid]) continue;
                 const d=Math.abs(enemy.x - tgt.x);
-                const vOK=(typeof canHitEnemy==='function')?canHitEnemy(tgt):true;
+                const vOK=((typeof canHitEnemy==='function')?canHitEnemy(tgt):true) && (typeof dashHeightOk==='function'?dashHeightOk(tgt):true); // V1.0 空中冲刺不打地面敌人
                 if(isCat && d<120 && vOK){
                   hitIds[tgt.uid]=true;
                   if(typeof damageEnemy==='function') damageEnemy(tgt, doCrit(10 + (charLevel()-1) + (window.playerAttackBuff||0)));
