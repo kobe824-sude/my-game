@@ -607,6 +607,8 @@ function saveGame(){
   if(!window.accountName) return;
   // 金币累计成就
   if((window.inventory && window.inventory.gold || 0) >= 100000 && typeof unlockAchievement==='function') unlockAchievement('rich');
+  // V1.0 暗影猎手（通关16关）成就：兼容已通关但旧版本未解锁的账号，自动补发
+  if((window.accountCleared && window.accountCleared[15]) && typeof unlockAchievement==='function') unlockAchievement('lv15');
   const key = 'milkfrog_data_' + window.accountName + '_' + window.accountPass;
   try{
     localStorage.setItem(key, JSON.stringify({ inventory: window.inventory, maxUnlocked: window.accountMaxUnlocked, cleared: window.accountCleared, hardCleared: window.accountHardCleared, qUnlocked: window.accountQUnlocked, eUnlocked: window.accountEUnlocked, rUnlocked: window.accountRUnlocked, l15Seen: window.accountL15Seen, l15EverCleared: !!window.accountL15EverCleared, achievements: window.accountAchievements, trainingUnlocked: !!window.accountTrainingUnlocked, seenEnemies: window.accountSeenEnemies || [] }));
@@ -4095,6 +4097,8 @@ function checkLevelClear(){
     if(isBossLv){
       window.l15StoryRun = false; // 已通关，本次剧情流程结束
       window.accountL15EverCleared = true; // V1.1 永久标记：曾通关过16关（剧情恢复按钮据此显示）
+      // V1.0 通关16关成就：必须在Boss关return前解锁（原来写在return后面永远执行不到）
+      if(typeof unlockAchievement==='function') unlockAchievement('lv15');
       if(typeof saveGame==='function') saveGame();
       if(typeof showStoryHint==='function') showStoryHint('🎉 暗影蛙将·怒岚 被击败了！');
       // R大招解锁提示：首次通关第16关后再弹出（不在进关/剧情中途弹）
