@@ -403,6 +403,8 @@ function doLogin(){
   }catch(e){}
   const lg = document.getElementById('login'); if(lg) lg.style.display='none';
   if(typeof renderAccountList==='function') renderAccountList();
+  // V1.0 登录成功后若有云端会话也重启心跳（普通登录同样生效）
+  if(typeof window.cloudLoggedIn==='function' && window.cloudLoggedIn() && typeof startCloudHeartbeat==='function'){ startCloudHeartbeat(); }
   showMainMenu();
 }
 window.doLogin = doLogin;
@@ -6427,3 +6429,5 @@ function update(){
 
 // V5.5 序章初始化
 initPrologue();
+// V1.0 云端会话恢复时重启在线心跳（刷新页面后好友仍能看到你在线）
+if(typeof window.cloudLoggedIn==='function' && window.cloudLoggedIn() && typeof startCloudHeartbeat==='function'){ startCloudHeartbeat(); }
