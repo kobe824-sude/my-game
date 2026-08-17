@@ -697,9 +697,32 @@ function closeAccountPanel(){
 window.closeAccountPanel = closeAccountPanel;
 function uploadAvatar(input){
   if(typeof FileReader === 'undefined' || !input || !input.files || !input.files[0]){ alert('请选择一张图片'); return; }
+  const file = input.files[0];
   const reader = new FileReader();
-  reader.onload = function(){ setAccountAvatar(reader.result); };
-  reader.readAsDataURL(input.files[0]);
+  reader.onload = function(){
+    const raw = reader.result;
+    // V1.0 相册原图压缩成小缩略图：原图base64几百KB，云端排行榜只存2000字符会被截断成碎图
+    try{
+      const img = new Image();
+      img.onload = function(){
+        try{
+          const MAX = 128;
+          let w = img.width, h = img.height;
+          if(w > MAX || h > MAX){ const s = MAX / Math.max(w, h); w = Math.round(w*s); h = Math.round(h*s); }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); // JPEG不支持透明，先铺白底
+          ctx.drawImage(img, 0, 0, w, h);
+          const out = canvas.toDataURL('image/jpeg', 0.82);
+          setAccountAvatar(out);
+        }catch(e2){ setAccountAvatar(raw); }
+      };
+      img.onerror = function(){ setAccountAvatar(raw); };
+      img.src = raw;
+    }catch(e){ setAccountAvatar(raw); }
+  };
+  reader.readAsDataURL(file);
 }
 window.uploadAvatar = uploadAvatar;
 function setAccountAvatar(dataUrl){
@@ -726,6 +749,12 @@ function setAccountAvatar(dataUrl){
         board.forEach(b=>{ if(b.name===window.accountName && b.avatar!==dataUrl){ b.avatar=dataUrl; changed=true; } });
         if(changed) localStorage.setItem('milkfrog_infinite_leaderboard_'+d, JSON.stringify(board));
       });
+    }
+  }catch(e){}
+  // V1.0 头像变更立即同步到云端排行榜（只更新头像，不影响成绩）
+  try{
+    if(window.accountName && typeof INFINITE_DIFFS!=='undefined' && typeof cloudUpdateAvatar==='function'){
+      INFINITE_DIFFS.forEach(d=>{ cloudUpdateAvatar(window.accountName, d, dataUrl); });
     }
   }catch(e){}
   const el = document.getElementById('accountPanel'); if(el) el.remove();
@@ -3659,7 +3688,7 @@ function showLeaderboard(){
   const col = (d)=>{
     const board = loadInfiniteBoard(d).sort((a,b)=> (b.wave - a.wave) || (b.gold - a.gold)).slice(0, 8);
     const rows = board.length
-      ? board.map((b,i)=> '<div class="rankRow"><span class="rankNum" style="color:'+colors[i]+'">'+(i+1)+'</span> <img class="rankAvatar" src="'+(b.avatar||'')+'" alt=""> '+b.name+' · '+b.wave+'波 · '+fmtGold(b.gold)+'</div>').join('')
+      ? board.map((b,i)=> '<div class="rankRow"><span class="rankNum" style="color:'+colors[i]+'">'+(i+1)+'</span> <img class="rankAvatar" src="'+(b.avatar||'')+'" alt="" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';}"> '+b.name+' · '+b.wave+'波 · '+fmtGold(b.gold)+'</div>').join('')
       : '<div class="rankRow">暂无记录</div>';
     return '<div class="lbCol"><div class="lbColTitle">'+INFINITE_DIFF_NAMES[d]+'</div>'+rows+'</div>';
   };
@@ -3950,10 +3979,26 @@ function cloudPushScore(diff, name, wave, gold, avatar){
       'Prefer': 'resolution=merge-duplicates,return=minimal'
     },
     body: JSON.stringify({
-      name: name, wave: wave, gold: gold, avatar: (avatar||'').slice(0, 2000), difficulty: diff
+      name: name, wave: wave, gold: gold, avatar: (avatar||'').slice(0, 50000), difficulty: diff
     })
   }).then(r=>{ if(!r.ok) throw new Error('supabase push '+r.status); return true; }).catch(e=>{ console.warn('云端上传失败(不影响本地)：', e.message); return null; });
 }
+// V1.0 头像变更立即同步到云端排行榜（只更新头像列，不动成绩）
+function cloudUpdateAvatar(name, diff, avatar){
+  if(!supabaseOn()) return Promise.resolve(null);
+  const url = window.SUPABASE_URL.replace(/\/$/,'');
+  return fetch(url + '/rest/v1/infinite_leaderboard?name=eq.' + encodeURIComponent(name) + '&difficulty=eq.' + encodeURIComponent(diff), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': window.SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ avatar: (avatar||'').slice(0, 50000) })
+  }).then(r=>{ if(!r.ok) throw new Error('supabase avatar '+r.status); return true; }).catch(e=>{ console.warn('云端头像更新失败(不影响本地)：', e.message); return null; });
+}
+window.cloudUpdateAvatar = cloudUpdateAvatar;
 // 从云端拉取某难度的排行榜（前8，按波次/金币降序）
 function cloudFetchBoard(diff){
   if(!supabaseOn()) return Promise.resolve(null);
@@ -4010,7 +4055,7 @@ function showInfiniteResult(){
   recordInfiniteScore(waves, gold);
   const board = loadInfiniteBoard();
   const colors = ['#ffd700','#4fc3f7','#81c784','#dff3ff','#dff3ff','#dff3ff','#dff3ff','#dff3ff'];
-  const rows = board.map((b,i)=> '<div class="rankRow"><span class="rankNum" style="color:'+colors[i]+'">'+(i+1)+'</span> <img class="rankAvatar" src="'+(b.avatar||'')+'" alt=""> '+b.name+' · 第'+b.wave+'波 · 金币'+fmtGold(b.gold)+'</div>').join('');
+  const rows = board.map((b,i)=> '<div class="rankRow"><span class="rankNum" style="color:'+colors[i]+'">'+(i+1)+'</span> <img class="rankAvatar" src="'+(b.avatar||'')+'" alt="" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';}"> '+b.name+' · 第'+b.wave+'波 · 金币'+fmtGold(b.gold)+'</div>').join('');
   const completed = !!window.infiniteCompleted;
   window.infiniteCompleted = false;
   const title = completed ? '🏆 无限模式通关' : '♾️ 无限模式结算';
