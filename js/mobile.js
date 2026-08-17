@@ -71,7 +71,7 @@
     if(typeof releaseRAim==='function') releaseRAim();
   }
   if(Rbtn){
-    Rbtn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); rAimStart(); });
+    Rbtn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); if(activeCharacter==='daodungou'){ skill('r'); } else { rAimStart(); } });
   }
   // V1.1 手机R大招拖动：按住后手指在屏幕任意位置拖动调整红圈，松开任意位置释放（与电脑版一致）
   document.addEventListener('pointerup', function(ev){
