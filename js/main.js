@@ -1036,8 +1036,8 @@ function getCdFactor(){
   let f = Math.max(0.5, 1 - cdNodes*0.05); // 每级-5%
   if(window.l15CdBoost) f = f * 0.5; // 第15关第二场：全技能冷却减半
   if(window.yishiCdHalf) f = f * 0.5; // 依石：全技能冷却减半
-  // 无限模式中转站：技能冷却缩短
-  if(window.inventory && window.inventory.infRun && window.inventory.infRun.cdCut){
+  // 无限模式中转站：技能冷却缩短（只在无限模式内生效，不会带到冒险模式）
+  if(window.infiniteMode && window.inventory && window.inventory.infRun && window.inventory.infRun.cdCut){
     f = f * (1 - window.inventory.infRun.cdCut);
   }
   return f;
