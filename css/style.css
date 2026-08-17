@@ -1256,10 +1256,14 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
 .chatCard{background:linear-gradient(180deg,rgba(58,74,112,.98),rgba(34,46,74,.98));border:3px solid #ffd86b;border-radius:20px;padding:16px;width:92vw;max-width:420px;height:70vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.6);}
 .chatTitle{font-size:18px;font-weight:bold;color:#ffd86b;text-align:center;margin-bottom:10px;}
 .chatMsgs{flex:1;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:12px;padding:10px;margin-bottom:8px;}
-.chatMsg{margin:6px 0;display:flex;flex-direction:column;}
-.chatMsg.mine{align-items:flex-end;}
-.chatMsg.theirs{align-items:flex-start;}
-.chatBubble{max-width:75%;padding:8px 12px;border-radius:14px;font-size:14px;color:#fff;word-break:break-word;line-height:1.5;}
+.chatMsg{margin:8px 0;display:flex;align-items:flex-start;gap:8px;}
+.chatMsg.mine{flex-direction:row-reverse;}
+.chatMsg.theirs{flex-direction:row;}
+.chatAvatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#333;border:1px solid rgba(255,255,255,.3);}
+.chatMain{display:flex;flex-direction:column;max-width:72%;}
+.chatMsg.mine .chatMain{align-items:flex-end;}
+.chatMsg.theirs .chatMain{align-items:flex-start;}
+.chatBubble{max-width:100%;padding:8px 12px;border-radius:14px;font-size:14px;color:#fff;word-break:break-word;line-height:1.5;}
 .chatMsg.mine .chatBubble{background:#4a90e2;border-bottom-right-radius:4px;}
 .chatMsg.theirs .chatBubble{background:#3a3f55;border-bottom-left-radius:4px;}
 .chatTime{font-size:10px;color:#9fb3cc;margin-top:2px;}
