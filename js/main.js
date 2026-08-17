@@ -2394,6 +2394,12 @@ function backToMenu(){
   const ilb = document.getElementById('infiniteLeaderboard'); if(ilb) ilb.remove();
   const bp = document.getElementById('backpackPanel'); if(bp) bp.remove(); backpackOpen = false;
   const sp = document.getElementById('shopPanel'); if(sp) sp.remove(); shopOpen = false;
+  // V1.0 返回主菜单时清理：训练营菜单 / 好友 / 聊天（避免残留巨大横条干扰其它界面）
+  const trm = document.getElementById('trainingMenu'); if(trm) trm.remove();
+  const fp2 = document.getElementById('friendPanel'); if(fp2) fp2.remove();
+  const cp2 = document.getElementById('chatPanel'); if(cp2) cp2.remove();
+  if(window._friendPanelTimer){ clearInterval(window._friendPanelTimer); window._friendPanelTimer = null; }
+  if(window._chatPollTimer){ clearInterval(window._chatPollTimer); window._chatPollTimer = null; }
   window.gamePaused = false;
   window.gameStarted = false;
   playerDead = false; gameEnded = false;
@@ -6164,6 +6170,9 @@ window.addEventListener("keydown",(e)=>{
         if(document.getElementById('skillUnlockPopup')){ const s=document.getElementById('skillUnlockPopup'); s.remove(); window.gamePaused=false; return; }
         if(document.getElementById('infiniteMenu')){ closeInfiniteMenu(); return; }
         if(document.getElementById('infiniteLeaderboard')){ closeLeaderboard(); return; }
+        if(document.getElementById('chatPanel')){ if(typeof closeChat==='function') closeChat(); return; }
+        if(document.getElementById('friendPanel')){ if(typeof closeFriends==='function') closeFriends(); return; }
+        if(document.getElementById('trainingMenu')){ const tme=document.getElementById('trainingMenu'); tme.remove(); return; }
         if(document.getElementById('settingsPanel')){ closeSettings(); return; }
         if(document.getElementById('pauseMenu')){ closePause(); return; }
         const ls = document.getElementById('levelSelect'); if(ls && ls.style.display==='flex'){ backToMenu(); return; }
