@@ -543,12 +543,27 @@ function openFriends(){
     '<div class="bpClose" onclick="closeFriends()">关闭 ✕</div>' +
     '</div>';
   document.body.appendChild(ov);
-  loadFriendsData().then(function(){ switchFriendTab('list'); });
+  loadFriendsData().then(function(){
+    switchFriendTab('list');
+    if(typeof updateUnreadState==='function') updateUnreadState();
+  });
+  // 好友面板每15秒自动刷新：在线状态 + 未读消息
+  if(_friendPanelTimer){ clearInterval(_friendPanelTimer); }
+  _friendPanelTimer = setInterval(function(){
+    if(!document.getElementById('friendPanel')){ if(_friendPanelTimer){ clearInterval(_friendPanelTimer); _friendPanelTimer=null; } return; }
+    loadFriendsData().then(function(){
+      if(typeof updateUnreadState==='function') updateUnreadState();
+      const content = document.getElementById('friendContent');
+      if(content && _currentFriendTab==='list' && typeof renderFriendList==='function') renderFriendList(content);
+      else if(content && _currentFriendTab==='req' && typeof renderFriendReq==='function') renderFriendReq(content);
+    });
+  }, 15000);
 }
 window.openFriends = openFriends;
-function closeFriends(){ const el = document.getElementById('friendPanel'); if(el) el.remove(); }
+function closeFriends(){ const el = document.getElementById('friendPanel'); if(el) el.remove(); if(_friendPanelTimer){ clearInterval(_friendPanelTimer); _friendPanelTimer=null; } if(typeof updateUnreadState==='function') updateUnreadState(); }
 window.closeFriends = closeFriends;
 function switchFriendTab(tab){
+  _currentFriendTab = tab;
   ['list','add','req'].forEach(function(t){ const el = document.getElementById('tab'+t[0].toUpperCase()+t.slice(1)); if(el){ el.classList.toggle('on', t===tab); } });
   const content = document.getElementById('friendContent');
   if(tab==='list') renderFriendList(content);
@@ -570,7 +585,8 @@ function renderFriendList(content){
   let html = '';
   accepted.forEach(function(f){
     const online = (typeof window.cloudIsOnline==='function') && window.cloudIsOnline(f.last_seen);
-    html += '<div class="friendRow"><img class="friendAvatar" src="'+(f.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png')+'" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><span class="friendName">'+escHtml(f.nickname)+'</span><span class="friendStatus '+(online?'on':'')+'">'+(online?'🟢 在线':'⚪ 离线')+'</span><button class="friendDel" onclick="delFriend('+f.id+')">✕</button></div>';
+    const unread = _unreadMap[f.otherId] || 0;
+    html += '<div class="friendRow"><img class="friendAvatar" src="'+(f.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png')+'" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><span class="friendName">'+escHtml(f.nickname)+(unread>0?'<span class="friendUnread">'+unread+'</span>':'')+'</span><span class="friendStatus '+(online?'on':'')+'">'+(online?'🟢 在线':'⚪ 离线')+'</span><button class="friendMsgBtn" onclick="openChat(\''+f.otherId+'\')">💬</button><button class="friendDel" onclick="delFriend('+f.id+')">✕</button></div>';
   });
   content.innerHTML = html;
 }
@@ -640,8 +656,10 @@ function refreshFriendDot(){
     const dot = document.getElementById('friendDot');
     if(!dot) return;
     const pending = (_friendsData||[]).filter(function(f){ return f.status==='pending' && f.incoming; }).length;
-    dot.style.display = pending > 0 ? 'inline-block' : 'none';
-    dot.textContent = pending > 0 ? String(pending) : '';
+    var totalUnread = 0; for (var k in (_unreadMap||{})){ totalUnread += _unreadMap[k]||0; }
+    const n = pending + totalUnread;
+    dot.style.display = n > 0 ? 'inline-block' : 'none';
+    dot.textContent = n > 0 ? String(n) : '';
   }catch(e){}
 }
 window.refreshFriendDot = refreshFriendDot;
@@ -655,6 +673,94 @@ function startCloudHeartbeat(){
 window.startCloudHeartbeat = startCloudHeartbeat;
 function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 window.escHtml = escHtml;
+// ============ V1.0 好友私聊 ============
+var _unreadMap = {};
+var _unreadKey = '';
+var _chatPollTimer = null;
+var _friendPanelTimer = null;
+var _currentFriendTab = 'list';
+function openChat(friendId){
+  const existing = document.getElementById('chatPanel'); if(existing){ existing.remove(); if(_chatPollTimer){ clearInterval(_chatPollTimer); _chatPollTimer=null; } }
+  const friend = (_friendsData||[]).find(function(f){ return f.otherId === friendId; });
+  const fname = friend ? friend.nickname : '好友';
+  const favatar = friend ? (friend.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png') : 'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png';
+  const ov = document.createElement('div');
+  ov.id = 'chatPanel';
+  ov.innerHTML = '<div class="chatCard">' +
+    '<div class="chatTitle">💬 ' + escHtml(fname) + '</div>' +
+    '<div id="chatMsgs" class="chatMsgs"></div>' +
+    '<div class="chatInputRow"><input id="chatInput" placeholder="输入消息…" maxlength="300"><button onclick="sendChatMessage(\'' + friendId + '\')">发送</button></div>' +
+    '<div class="bpClose" onclick="closeChat()">关闭 ✕</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  const input = document.getElementById('chatInput');
+  if(input){ input.focus(); input.addEventListener('keydown', function(e){ if(e.key==='Enter') sendChatMessage(friendId); }); }
+  loadChatMessages(friendId);
+  startChatPoll(friendId);
+}
+window.openChat = openChat;
+function closeChat(){
+  const el = document.getElementById('chatPanel'); if(el) el.remove();
+  if(_chatPollTimer){ clearInterval(_chatPollTimer); _chatPollTimer = null; }
+  if(typeof updateUnreadState==='function') updateUnreadState();
+}
+window.closeChat = closeChat;
+function loadChatMessages(friendId){
+  const uid = window.cloudSession && window.cloudSession.user_id;
+  window.cloudGetMessages(friendId).then(function(rows){
+    const box = document.getElementById('chatMsgs');
+    if(!box) return;
+    box.innerHTML = '';
+    (rows||[]).forEach(function(m){
+      const mine = m.sender_id === uid;
+      const d = m.created_at ? new Date(m.created_at) : null;
+      const t = d ? ((d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()) : '';
+      const div = document.createElement('div');
+      div.className = 'chatMsg ' + (mine ? 'mine' : 'theirs');
+      div.innerHTML = '<div class="chatBubble">' + escHtml(m.content) + '</div><div class="chatTime">' + t + '</div>';
+      box.appendChild(div);
+    });
+    box.scrollTop = box.scrollHeight;
+    if(typeof window.cloudMarkRead==='function') window.cloudMarkRead(friendId);
+    setTimeout(function(){ if(typeof updateUnreadState==='function') updateUnreadState(); }, 300);
+  }).catch(function(){});
+}
+window.loadChatMessages = loadChatMessages;
+function sendChatMessage(friendId){
+  const input = document.getElementById('chatInput');
+  const text = input ? input.value.trim() : '';
+  if(!text){ return; }
+  if(input) input.value = '';
+  window.cloudSendMessage(friendId, text).then(function(){
+    loadChatMessages(friendId);
+  }).catch(function(e){ alert('发送失败：'+((e&&e.message)||'请重试')); if(input) input.value = text; });
+}
+window.sendChatMessage = sendChatMessage;
+function startChatPoll(friendId){
+  if(_chatPollTimer){ clearInterval(_chatPollTimer); }
+  _chatPollTimer = setInterval(function(){
+    if(!document.getElementById('chatPanel')){ if(_chatPollTimer){ clearInterval(_chatPollTimer); _chatPollTimer=null; } return; }
+    loadChatMessages(friendId);
+  }, 5000);
+}
+window.startChatPoll = startChatPoll;
+// 刷新未读状态（主菜单红点 + 好友列表角标），有变化才重刷避免闪烁
+function updateUnreadState(){
+  if(typeof window.cloudLoggedIn==='function' && !window.cloudLoggedIn()){ _unreadMap = {}; _unreadKey=''; if(typeof refreshFriendDot==='function') refreshFriendDot(); return; }
+  window.cloudGetUnread().then(function(rows){
+    const map = {};
+    (rows||[]).forEach(function(r){ if(r && r.sender_id){ map[r.sender_id] = (map[r.sender_id]||0)+1; } });
+    const key = JSON.stringify(map);
+    if(key === _unreadKey) return;
+    _unreadKey = key;
+    _unreadMap = map;
+    if(typeof refreshFriendDot==='function') refreshFriendDot();
+    const content = document.getElementById('friendContent');
+    if(content && _currentFriendTab==='list' && typeof renderFriendList==='function') renderFriendList(content);
+  }).catch(function(){});
+}
+window.updateUnreadState = updateUnreadState;
+
 function restoreRemember(){
   try{
     const r = JSON.parse(localStorage.getItem('milkfrog_remember')||'null');
