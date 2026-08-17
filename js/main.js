@@ -519,8 +519,140 @@ function _bindLocalAndEnter(name, pass, msg){
   const ln = document.getElementById('loginName'); if(ln) ln.value = name;
   const lp = document.getElementById('loginPass'); if(lp) lp.value = pass;
   if(typeof doLogin==='function') doLogin();
+  // 云端登录后启动在线心跳
+  if(typeof window.cloudLoggedIn==='function' && window.cloudLoggedIn() && typeof startCloudHeartbeat==='function'){ startCloudHeartbeat(); }
   if(msg) setTimeout(function(){ alert(msg); }, 400);
 }
+// ============ V1.0 好友系统 ============
+var _friendsData = [];
+function openFriends(){
+  const existing = document.getElementById('friendPanel'); if(existing){ existing.remove(); return; }
+  if(typeof window.cloudLoggedIn!=='function' || !window.cloudLoggedIn()){
+    alert('请先用「☁️ 云端登录/注册」登录云端账号，才能使用好友功能');
+    return;
+  }
+  const ov = document.createElement('div');
+  ov.id = 'friendPanel';
+  ov.className = 'bpPanel';
+  ov.innerHTML = '<div class="friendCard">' +
+    '<div class="bpTitle">👥 好友</div>' +
+    '<div class="friendTabs"><button class="friendTab on" id="tabList" onclick="switchFriendTab(\'list\')">好友列表</button><button class="friendTab" id="tabAdd" onclick="switchFriendTab(\'add\')">添加好友</button><button class="friendTab" id="tabReq" onclick="switchFriendTab(\'req\')">申请</button></div>' +
+    '<div id="friendContent"></div>' +
+    '<div class="bpClose" onclick="closeFriends()">关闭 ✕</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  loadFriendsData().then(function(){ switchFriendTab('list'); });
+}
+window.openFriends = openFriends;
+function closeFriends(){ const el = document.getElementById('friendPanel'); if(el) el.remove(); }
+window.closeFriends = closeFriends;
+function switchFriendTab(tab){
+  ['list','add','req'].forEach(function(t){ const el = document.getElementById('tab'+t[0].toUpperCase()+t.slice(1)); if(el){ el.classList.toggle('on', t===tab); } });
+  const content = document.getElementById('friendContent');
+  if(tab==='list') renderFriendList(content);
+  else if(tab==='add') renderFriendAdd(content);
+  else renderFriendReq(content);
+}
+window.switchFriendTab = switchFriendTab;
+function loadFriendsData(){
+  return window.cloudMyFriends().then(function(data){
+    _friendsData = data || [];
+    refreshFriendDot();
+    return data;
+  }).catch(function(){ _friendsData=[]; return []; });
+}
+window.loadFriendsData = loadFriendsData;
+function renderFriendList(content){
+  const accepted = _friendsData.filter(function(f){ return f.status==='accepted'; });
+  if(!accepted.length){ content.innerHTML = '<div class="friendEmpty">还没有好友，去「添加好友」搜一个吧！</div>'; return; }
+  let html = '';
+  accepted.forEach(function(f){
+    const online = (typeof window.cloudIsOnline==='function') && window.cloudIsOnline(f.last_seen);
+    html += '<div class="friendRow"><img class="friendAvatar" src="'+(f.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png')+'" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><span class="friendName">'+escHtml(f.nickname)+'</span><span class="friendStatus '+(online?'on':'')+'">'+(online?'🟢 在线':'⚪ 离线')+'</span><button class="friendDel" onclick="delFriend('+f.id+')">✕</button></div>';
+  });
+  content.innerHTML = html;
+}
+function renderFriendAdd(content){
+  content.innerHTML = '<div class="friendSearch"><input id="friendSearchInput" placeholder="输入昵称搜索玩家" maxlength="12"><button onclick="doFriendSearch()">搜索</button></div><div id="friendSearchResult"></div>';
+  const input = document.getElementById('friendSearchInput');
+  if(input){ input.focus(); input.addEventListener('keydown', function(e){ if(e.key==='Enter') doFriendSearch(); }); }
+}
+window.renderFriendAdd = renderFriendAdd;
+function doFriendSearch(){
+  const input = document.getElementById('friendSearchInput');
+  const kw = input ? input.value.trim() : '';
+  const res = document.getElementById('friendSearchResult');
+  if(!res) return;
+  if(!kw){ res.innerHTML = '<div class="friendEmpty">请输入昵称</div>'; return; }
+  res.innerHTML = '<div class="friendEmpty">搜索中…</div>';
+  window.cloudSearchPlayers(kw).then(function(rows){
+    if(!rows.length){ res.innerHTML = '<div class="friendEmpty">没有找到「'+escHtml(kw)+'」</div>'; return; }
+    let html = '';
+    rows.forEach(function(p){
+      const rel = _friendsData.find(function(f){ return f.otherId===p.id; });
+      let btn = '';
+      if(rel && rel.status==='accepted'){ btn = '<span class="friendTag">已是好友</span>'; }
+      else if(rel && rel.status==='pending' && rel.incoming){ btn = '<span class="friendTag">等待你接受</span>'; }
+      else if(rel && rel.status==='pending'){ btn = '<span class="friendTag">已发送申请</span>'; }
+      else { btn = '<button class="friendAddBtn" onclick="sendFriendReq(\''+p.id+'\')">加好友</button>'; }
+      html += '<div class="friendRow"><img class="friendAvatar" src="'+(p.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png')+'" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><span class="friendName">'+escHtml(p.nickname)+'</span>'+btn+'</div>';
+    });
+    res.innerHTML = html;
+  }).catch(function(e){ res.innerHTML = '<div class="friendEmpty">搜索失败：'+escHtml((e&&e.message)||'请重试')+'</div>'; });
+}
+window.doFriendSearch = doFriendSearch;
+function sendFriendReq(pid){
+  window.cloudSendFriendRequest(pid).then(function(){
+    alert('✅ 好友申请已发送！');
+    return loadFriendsData();
+  }).then(function(){ doFriendSearch(); }).catch(function(e){ alert('发送失败：'+((e&&e.message)||'请重试')); });
+}
+window.sendFriendReq = sendFriendReq;
+function renderFriendReq(content){
+  const reqs = _friendsData.filter(function(f){ return f.status==='pending' && f.incoming; });
+  if(!reqs.length){ content.innerHTML = '<div class="friendEmpty">没有新的好友申请</div>'; return; }
+  let html = '';
+  reqs.forEach(function(f){
+    html += '<div class="friendRow"><img class="friendAvatar" src="'+(f.avatar||'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png')+'" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><span class="friendName">'+escHtml(f.nickname)+'</span><button class="friendYes" onclick="respondFriend('+f.id+',true)">接受</button><button class="friendNo" onclick="respondFriend('+f.id+',false)">拒绝</button></div>';
+  });
+  content.innerHTML = html;
+}
+window.renderFriendReq = renderFriendReq;
+function respondFriend(fid, accept){
+  window.cloudRespondFriend(fid, accept).then(function(){
+    alert(accept ? '✅ 已接受好友申请！' : '已拒绝该申请');
+    return loadFriendsData();
+  }).then(function(){ renderFriendReq(document.getElementById('friendContent')); }).catch(function(e){ alert('操作失败：'+((e&&e.message)||'请重试')); });
+}
+window.respondFriend = respondFriend;
+function delFriend(fid){
+  if(!confirm('确定删除该好友吗？')) return;
+  window.cloudRemoveFriend(fid).then(function(){ return loadFriendsData(); })
+    .then(function(){ renderFriendList(document.getElementById('friendContent')); })
+    .catch(function(e){ alert('删除失败：'+((e&&e.message)||'请重试')); });
+}
+window.delFriend = delFriend;
+// 主菜单红点：有待处理申请时显示
+function refreshFriendDot(){
+  try{
+    const dot = document.getElementById('friendDot');
+    if(!dot) return;
+    const pending = (_friendsData||[]).filter(function(f){ return f.status==='pending' && f.incoming; }).length;
+    dot.style.display = pending > 0 ? 'inline-block' : 'none';
+    dot.textContent = pending > 0 ? String(pending) : '';
+  }catch(e){}
+}
+window.refreshFriendDot = refreshFriendDot;
+// 云端心跳（每30秒更新在线状态）
+function startCloudHeartbeat(){
+  if(window._cloudHbt) return;
+  window._cloudHbt = setInterval(function(){ if(typeof window.cloudHeartbeat==='function') window.cloudHeartbeat(); }, 30000);
+  if(typeof window.cloudHeartbeat==='function') window.cloudHeartbeat();
+  setTimeout(function(){ if(typeof refreshFriendDot==='function') refreshFriendDot(); }, 1200);
+}
+window.startCloudHeartbeat = startCloudHeartbeat;
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+window.escHtml = escHtml;
 function restoreRemember(){
   try{
     const r = JSON.parse(localStorage.getItem('milkfrog_remember')||'null');
