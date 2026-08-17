@@ -2074,7 +2074,7 @@ function goSelect(){
 window.goSelect = goSelect;
 
 function backToMenu(){
-  if(window.infiniteMode && window.inventory){ window.inventory.infiniteHp = playerHp; window.inventory.infiniteMaxHp = playerMaxHp; }
+  if(window.infiniteMode && window.inventory){ window.inventory.infiniteHp = playerHp; window.inventory.infiniteMaxHp = playerMaxHp; window.inventory.infiniteRunGold = window.infiniteRunGold || 0; } // V1.0 退出时保存本局累计金币，再进不丢
   if(typeof saveGame==='function') saveGame(); // 保存无限模式退出时的血量/进度
   window.infiniteMode = false;
   stopVictorySound();
@@ -3753,7 +3753,7 @@ function enterInfiniteMode(){
   window.gamePaused = false;
   if(typeof clearBattleOverlays==='function') clearBattleOverlays();
   window.infiniteWave = (window.inventory && window.inventory.infiniteWave) || 1;
-  window.infiniteRunGold = 0;
+  window.infiniteRunGold = (window.inventory && window.inventory.infiniteWave > 1 && window.inventory.infiniteRunGold) ? window.inventory.infiniteRunGold : 0; // V1.0 续玩恢复累计金币，新开局从0开始
   // 记住本次使用的角色：中途退出后再进直接沿用
   if(window.inventory) window.inventory.infiniteChar = activeCharacter;
   // 中途退出再进：血量保持退出时状态；死亡后从满血重新开始
