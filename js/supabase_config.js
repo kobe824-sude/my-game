@@ -159,3 +159,51 @@ function cloudIsOnline(lastSeen){
 }
 window.cloudIsOnline = cloudIsOnline;
 
+// ===================== V1.0 好友私聊 =====================
+// 发送消息
+function cloudSendMessage(receiverId, content){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  const text = String(content==null?'':content).slice(0, 300);
+  if(!text.trim()) return Promise.reject(new Error('消息不能为空'));
+  return fetch(URL + '/rest/v1/messages', {
+    method: 'POST',
+    headers: _cloudHeaders(true),
+    body: JSON.stringify({ sender_id: uid, receiver_id: receiverId, content: text })
+  }).then(function(r){ if(!r.ok) throw new Error('发送失败，请重试'); return true; });
+}
+window.cloudSendMessage = cloudSendMessage;
+// 与某好友的完整聊天记录（时间升序）
+function cloudGetMessages(friendId){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  const f = 'or=(and(sender_id.eq.' + uid + ',receiver_id.eq.' + friendId + '),and(sender_id.eq.' + friendId + ',receiver_id.eq.' + uid + '))';
+  return fetch(URL + '/rest/v1/messages?' + f + '&select=id,sender_id,content,created_at,is_read&order=created_at.asc&limit=200', { headers: _cloudHeaders() })
+    .then(function(r){ return r.json(); }).then(function(rows){ return Array.isArray(rows)?rows:[]; });
+}
+window.cloudGetMessages = cloudGetMessages;
+// 我收到的全部未读消息（返回 sender_id 列表）
+function cloudGetUnread(){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.resolve([]);
+  return fetch(URL + '/rest/v1/messages?receiver_id=eq.' + uid + '&is_read=eq.false&select=sender_id&limit=200', { headers: _cloudHeaders() })
+    .then(function(r){ return r.json(); }).then(function(rows){ return Array.isArray(rows)?rows:[]; });
+}
+window.cloudGetUnread = cloudGetUnread;
+// 把来自某好友的未读消息标记为已读
+function cloudMarkRead(friendId){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.resolve();
+  return fetch(URL + '/rest/v1/messages?receiver_id=eq.' + uid + '&sender_id=eq.' + friendId + '&is_read=eq.false', {
+    method: 'PATCH',
+    headers: _cloudHeaders(true),
+    body: JSON.stringify({ is_read: true })
+  }).catch(function(){});
+}
+window.cloudMarkRead = cloudMarkRead;
+
+
