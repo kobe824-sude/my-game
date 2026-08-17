@@ -16,7 +16,7 @@
   document.addEventListener('touchend', function(ev){
     var now = Date.now();
     var t = ev.changedTouches && ev.changedTouches[0];
-    if(t && now - _lastTapT < 350 && Math.abs(t.clientX - _lastTapX) < 60 && Math.abs(t.clientY - _lastTapY) < 60){
+    if(t && now - _lastTapT < 400 && Math.abs(t.clientX - _lastTapX) < 90 && Math.abs(t.clientY - _lastTapY) < 90){
       // V1.0 未缩放时拦截双击(防放大)；已缩放时放行双击(让浏览器可双击还原，避免卡死在放大状态)
       var vs = window.visualViewport;
       var zoomed = vs && vs.scale > 1.01;
@@ -48,7 +48,7 @@
     if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); return; }
     var now2 = Date.now();
     var t2 = ev.changedTouches && ev.changedTouches[0];
-    if(t2 && now2 - _lastTapT < 350 && Math.abs(t2.clientX - _lastTapX) < 60 && Math.abs(t2.clientY - _lastTapY) < 60){
+    if(t2 && now2 - _lastTapT < 400 && Math.abs(t2.clientX - _lastTapX) < 90 && Math.abs(t2.clientY - _lastTapY) < 90){
       var vs2 = window.visualViewport;
       var zoomed2 = vs2 && vs2.scale > 1.01;
       if(!zoomed2){ ev.preventDefault(); }
