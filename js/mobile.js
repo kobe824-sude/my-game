@@ -43,9 +43,16 @@
     window.visualViewport.addEventListener('resize', function(){ setTimeout(tryResetZoom, 60); });
   }
   window.tryResetZoom = tryResetZoom;
-  // 多指触摸（捏合）直接阻止默认
+  // 多指触摸（捏合）直接阻止默认；疑似双击（第二下触摸）且未缩放时提前拦截，杜绝Chrome双击缩放
   document.addEventListener('touchstart', function(ev){
-    if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); }
+    if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); return; }
+    var now2 = Date.now();
+    var t2 = ev.changedTouches && ev.changedTouches[0];
+    if(t2 && now2 - _lastTapT < 350 && Math.abs(t2.clientX - _lastTapX) < 60 && Math.abs(t2.clientY - _lastTapY) < 60){
+      var vs2 = window.visualViewport;
+      var zoomed2 = vs2 && vs2.scale > 1.01;
+      if(!zoomed2){ ev.preventDefault(); }
+    }
   }, {passive:false});
 
   var $=function(id){ return document.getElementById(id); };
