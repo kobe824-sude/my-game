@@ -7,3 +7,8 @@
   Cache-Control: public, max-age=0, must-revalidate
 /manifest.webmanifest
   Cache-Control: public, max-age=0, must-revalidate
+
+# 游戏安装包：点链接直接下载（不打开网页）
+/downloads/*.zip
+  Content-Type: application/zip
+  Content-Disposition: attachment; filename="milkfrog-game.zip"
