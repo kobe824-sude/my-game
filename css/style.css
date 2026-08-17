@@ -1118,6 +1118,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
 
 /* ========== V1.10 手机端：禁止双击缩放 + 选角卡片不溢出 + 主菜单适配小屏 ========== */
 html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
+#playerHUD,#frogHUD,#levelBanner,.l15Hint,.bossTelegraph,.bossWarnBar{touch-action:none;} /* V1.0 战斗固定UI也禁止触摸缩放 */
 #game,#mobileControls{touch-action:none;} /* 游戏区域完全禁用浏览器手势缩放 */
 @media (pointer:coarse){
   #select h1{font-size:26px;margin:0 0 14px;}
