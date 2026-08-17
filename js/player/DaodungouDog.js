@@ -160,20 +160,29 @@ window.DOG = (function(){
 
   // ---------- E 技能：举盾格挡（护盾光环，不遮挡角色） ----------
   function useShield(){
-    if(playerDead || gameEnded || !state.shieldReady || state.shieldActive) return;
+    if(playerDead || gameEnded || !state.shieldReady) return; // V1.0 冷却好了就能按：护盾还在时也能刷新（修复"冷却好了按E没反应"）
     state.shieldReady = false;
     state.shieldCd = window.trainingMode ? 3000 : Math.round(CFG.shieldCooldown * (window.getCdFactor?window.getCdFactor():1)); // 训练营：冷却3秒
     window.dogShieldCooldownLeft = state.shieldCd;
+    const wasActive = state.shieldActive;
     state.shieldActive = true;
     // 给玩家增加护盾值（护盾药也是加这个值）
-    window.playerShield = (window.playerShield||0) + CFG.shieldMax + 5*((window.inventory&&window.inventory.skillLevels&&window.inventory.skillLevels.shield)||0); // 在现有护盾上叠加（不会把高护盾顶掉）
+    const maxShield = CFG.shieldMax + 5*((window.inventory&&window.inventory.skillLevels&&window.inventory.skillLevels.shield)||0);
+    if(wasActive){
+      // V1.0 护盾还在生效时重按：刷新到满值（不无限叠加），避免"冷却好了却按不出来"
+      window.playerShield = Math.max(window.playerShield||0, maxShield);
+    } else {
+      // 在现有护盾上叠加（不会把高护盾顶掉）
+      window.playerShield = (window.playerShield||0) + maxShield;
+    }
     window.dogShieldAbsorbed = 0;
     if(window.dogShieldReflect){ window.dogShieldReflect.accum = 0; window.dogShieldReflect.phase = 'accum'; window.dogShieldReflect.phaseStart = Date.now(); window.dogShieldReflect.readyDeadline = 0; }
     playSound("assets/audio/players/miaocuijiao_cat/hurt.wav", 0.35);
     if(window.updateV13UI) window.updateV13UI();
     const sc = state.shieldCd;
-    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）
-    setTimeout(()=>{ state.shieldActive = false; }, CFG.shieldDuration + 1000*((window.inventory&&window.inventory.skillLevels&&window.inventory.skillLevels.shield)||0));
+    // V1.0 冷却统一由 setInterval 递减到0置 ready（暂停时冻结）；重按时重置护盾时长
+    if(state.shieldTimer){ clearTimeout(state.shieldTimer); state.shieldTimer = null; }
+    state.shieldTimer = setTimeout(()=>{ state.shieldActive = false; state.shieldTimer = null; }, CFG.shieldDuration + 1000*((window.inventory&&window.inventory.skillLevels&&window.inventory.skillLevels.shield)||0));
   }
 
   function ensureShieldFx(){
