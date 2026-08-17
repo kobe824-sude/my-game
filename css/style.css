@@ -1252,7 +1252,7 @@ html,body{touch-action:manipulation;} /* 双击不缩放（保留滚动） */
 #friendDot{display:inline-block;margin-left:4px;background:#e85b4b;color:#fff;border-radius:10px;font-size:11px;line-height:1;padding:2px 5px;vertical-align:middle;}
 
 /* ===================== V1.0 好友私聊 ===================== */
-#chatPanel{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;justify-content:center;align-items:center;z-index:9997;}
+#chatPanel{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;justify-content:center;align-items:center;z-index:9999;} /* V1.0 聊天窗口必须在好友面板(9998)之上，否则被盖住无法操作 */
 .chatCard{background:linear-gradient(180deg,rgba(58,74,112,.98),rgba(34,46,74,.98));border:3px solid #ffd86b;border-radius:20px;padding:16px;width:92vw;max-width:420px;height:70vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.6);}
 .chatTitle{font-size:18px;font-weight:bold;color:#ffd86b;text-align:center;margin-bottom:10px;}
 .chatMsgs{flex:1;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:12px;padding:10px;margin-bottom:8px;}
