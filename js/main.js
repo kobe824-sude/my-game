@@ -2910,7 +2910,6 @@ function updateL15(){
     updateBossTimerUI();
     if(window.bossTimeLeft <= 0){ l15PlotKill(); }
   }
-  updateBossFx();
 }
 
 function updateBossTimerUI(){
@@ -3830,6 +3829,7 @@ function startInfiniteWave(){
     boss.img.style.width = "300px"; boss.img.style.height = "300px";
     boss.summonNext = Date.now() + 10000;
     boss.annihilNext = Date.now() + 60000; // 无限50波Boss：每60秒放大招
+    boss.nextAttack = Date.now() + 4000; // 入场缓冲：进关4秒后才出第一招，不会一进来就攻击
     updateEnemyHp(boss);
     updateTargetFrog();
     const banner = document.createElement("div");
@@ -6155,6 +6155,7 @@ function update(){
     // 通关判定
     checkLevelClear();
     if(typeof updateL15==='function') updateL15();
+    if(typeof updateBossFx==='function') updateBossFx(); // V1.0 无尽模式50波Boss：攻击特效也要移动/消失（不只是第16关）
   if(typeof updateSpecial==='function') updateSpecial();
 
     // 信息面板（调试用，隐藏时不更新，避免每帧innerHTML开销）
