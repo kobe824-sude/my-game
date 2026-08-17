@@ -677,6 +677,8 @@ input,textarea{ cursor:text; }
   box-shadow:0 5px 0 #b8860b;transition:.15s;
 }
 #login button:hover{transform:translateY(-2px);box-shadow:0 7px 0 #b8860b;}
+#login button.cloudBtn{background:linear-gradient(180deg,#7fd4ff,#3a8de0);color:#0b2a4a;box-shadow:0 4px 0 #1c5a99;} /* V1.0 云端登录/注册按钮 */
+#login button.cloudBtn:hover{box-shadow:0 7px 0 #1c5a99;}
 #login .loginHint{margin-top:16px;font-size:13px;color:#a9bcd8;}
 
 /* ===================== V15.2 登录左右分栏（左登录 / 右注册） ===================== */
