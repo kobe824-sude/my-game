@@ -707,17 +707,22 @@ function closeChat(){
 window.closeChat = closeChat;
 function loadChatMessages(friendId){
   const uid = window.cloudSession && window.cloudSession.user_id;
+  // V1.0 双方头像：自己的头像 + 对方头像（像微信/QQ）
+  const friend = (_friendsData||[]).find(function(f){ return f.otherId === friendId; });
+  const myAvatar = (typeof getMyAvatar==='function') ? getMyAvatar() : 'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png';
+  const fAvatar = friend ? (friend.avatar || 'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png') : 'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png';
   window.cloudGetMessages(friendId).then(function(rows){
     const box = document.getElementById('chatMsgs');
     if(!box) return;
     box.innerHTML = '';
     (rows||[]).forEach(function(m){
       const mine = m.sender_id === uid;
+      const av = mine ? myAvatar : fAvatar;
       const d = m.created_at ? new Date(m.created_at) : null;
       const t = d ? ((d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()) : '';
       const div = document.createElement('div');
       div.className = 'chatMsg ' + (mine ? 'mine' : 'theirs');
-      div.innerHTML = '<div class="chatBubble">' + escHtml(m.content) + '</div><div class="chatTime">' + t + '</div>';
+      div.innerHTML = '<img class="chatAvatar" src="' + av + '" alt="" onerror="this.src=\'assets/players/miaocuijiao_cat/sprites/miaocat_idle.png\';"><div class="chatMain"><div class="chatBubble">' + escHtml(m.content) + '</div><div class="chatTime">' + t + '</div></div>';
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
