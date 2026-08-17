@@ -1559,6 +1559,7 @@ function openSettings(){
     
     '<div class="setRow"><span>🐸 奶蛙笑声</span><input type="checkbox" '+(s.frogLaugh===false?'':'checked')+' onchange="setFrogLaugh(this.checked)"><span class="setNote">（打开后会有奶蛙笑，可能比较吵）</span></div>' +
     '<div class="setRow"><span>🖥️ 全屏模式</span><button class="bpUse" onclick="toggleFullscreen()">切换全屏</button></div>' +
+    '<div class="setRow"><span>📥 安装应用</span><button class="bpUse" onclick="installApp()">安装为应用</button><span class="setNote">（也可用浏览器菜单「添加到主屏幕/安装应用」）</span></div>' +
     '<div class="setRow setDanger"><span>🔄 一键重来（清空全部进度）</span><button class="bpUse" onclick="confirmReset()">清空进度</button></div>' +
     '<div class="bpClose" onclick="closeSettings()">关闭 ✕</div>';
   document.body.appendChild(panel);
@@ -1630,6 +1631,23 @@ function toggleFullscreen(){
   }
 }
 window.toggleFullscreen = toggleFullscreen;
+// V1.0 安装为应用（PWA）
+var _deferredPrompt = null;
+if(typeof window.addEventListener==='function'){
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    _deferredPrompt = e;
+  });
+}
+function installApp(){
+  if(_deferredPrompt && typeof _deferredPrompt.prompt==='function'){
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function(){ _deferredPrompt = null; });
+  } else {
+    alert('如果没弹出安装框，请用浏览器菜单的「添加到主屏幕 / 安装应用」安装（电脑 Chrome/Edge 地址栏也有安装图标）');
+  }
+}
+window.installApp = installApp;
 // V15.18 全屏+Esc修复：关卡内按Esc应呼出暂停/退出菜单，不再被"强制回全屏"困住
 // - 主菜单/设置界面：保持全屏（只有设置按钮能退出全屏）
 // - 关卡内：允许浏览器退出全屏，并自动打开暂停菜单，避免死循环无法退出
