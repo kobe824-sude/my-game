@@ -915,6 +915,14 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* ===================== V9.2 剧情分镜图片 ===================== */
 #l15Story .storyImgWrap{text-align:center;margin-bottom:12px;}
 #l15Story .storyImg{max-width:820px;max-height:400px;border-radius:12px;border:2px solid #a05ae8;object-fit:cover;}
+/* V1.0 手机/小屏：剧情图片缩小、文字始终可见（全屏也不被挤掉） */
+@media (pointer:coarse), (max-width:820px){
+  #l15Story .storyCard{max-width:94vw;padding:14px 16px;max-height:92vh;overflow-y:auto;}
+  #l15Story .storyImg{max-width:88vw;max-height:34vh;object-fit:contain;border-radius:10px;}
+  #l15Story .storyText{font-size:16px;line-height:1.6;}
+  #l15Story .storySub{font-size:13px;margin-bottom:8px;}
+  #l15Story .storyHint{margin-top:10px;font-size:13px;}
+}
 /* 黑暗吐息贴图版 */
 .bossFx.breathImg{position:absolute;left:0;object-fit:cover;z-index:65;pointer-events:none;filter:drop-shadow(0 0 12px rgba(160,80,255,.8));}
 /* 泰山压顶落点警告圈 / 空中暗弹 */
