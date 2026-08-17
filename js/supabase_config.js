@@ -45,8 +45,9 @@ window.cloudRegister = cloudRegister;
 // 云端登录：用昵称反查隐藏邮箱再登录
 function cloudLogin(nickname, password){
   const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  // V1.0 查账号用公开密钥（不依赖旧登录令牌，避免令牌过期误报'账号不存在'）
   return fetch(URL + '/rest/v1/players?nickname=eq.' + encodeURIComponent(nickname) + '&select=auth_email&limit=1', {
-    headers: _cloudHeaders()
+    headers: { 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY }
   }).then(function(r){ return r.json(); }).then(function(rows){
     if(!rows || !rows.length || !rows[0] || !rows[0].auth_email){ throw new Error('云端账号不存在，请先注册'); }
     const email = rows[0].auth_email;
@@ -59,7 +60,7 @@ function cloudLogin(nickname, password){
       return r.json();
     }).then(function(d){
       if(!d.access_token){ throw new Error('登录失败'); }
-      window.cloudSession = { access_token: d.access_token, user_id: d.user && d.user.id, email: email, nickname: nickname };
+      window.cloudSession = { access_token: d.access_token, refresh_token: d.refresh_token || '', user_id: d.user && d.user.id, email: email, nickname: nickname };
       try{ localStorage.setItem('milkfrog_cloud_session', JSON.stringify(window.cloudSession)); }catch(e){}
       return window.cloudSession;
     });
@@ -144,9 +145,33 @@ function cloudRemoveFriend(friendId){
 }
 window.cloudRemoveFriend = cloudRemoveFriend;
 // 在线心跳：每30秒更新一次 last_seen
+// V1.0 令牌快过期时自动刷新（避免长时间在线后好友/私聊失效）
+function cloudEnsureSession(){
+  const s = window.cloudSession;
+  if(!s || !s.access_token) return Promise.resolve();
+  let exp = 0;
+  try{ const payload = JSON.parse(atob(s.access_token.split('.')[1])); exp = (payload.exp||0)*1000; }catch(e){}
+  if(exp && Date.now() < exp - 60000) return Promise.resolve();
+  if(!s.refresh_token) return Promise.resolve();
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  return fetch(URL + '/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST',
+    headers: { 'apikey': window.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: s.refresh_token })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(d && d.access_token){
+      window.cloudSession.access_token = d.access_token;
+      if(d.refresh_token) window.cloudSession.refresh_token = d.refresh_token;
+      try{ localStorage.setItem('milkfrog_cloud_session', JSON.stringify(window.cloudSession)); }catch(e){}
+    }
+  }).catch(function(){});
+}
+window.cloudEnsureSession = cloudEnsureSession;
 function cloudHeartbeat(){
   const uid = _cloudUid();
   if(!uid) return;
+  // 心跳时先续期令牌（如果快过期）
+  if(typeof cloudEnsureSession==='function') cloudEnsureSession();
   const URL = window.SUPABASE_URL.replace(/\/$/,'');
   fetch(URL + '/rest/v1/players?id=eq.' + uid, { method: 'PATCH', headers: _cloudHeaders(true), body: JSON.stringify({ last_seen: new Date().toISOString() }) }).catch(function(){});
 }
