@@ -1011,7 +1011,8 @@ function fmtGold(n){
   n = Math.max(0, Math.floor(n||0));
   if(n >= 10000){
     const w = n/10000;
-    return (Math.round(w*10)/10) + 'w';
+    // V1.0 保留小数不丢：26490 -> 2.649w（最多4位，去掉末尾0）
+    return w.toFixed(4).replace(/\.?0+$/,'') + 'w';
   }
   return String(n);
 }
@@ -5161,9 +5162,13 @@ function tryRetreat(){
 
 
 function showCombatText(value, type, x, y){
+    // V1.0 数值取整显示：避免 60.1111 这类小数
+    let v = value;
+    if(typeof v === 'number'){ v = Math.round(v); }
+    else if(typeof v === 'string'){ v = v.replace(/(-?\d+\.\d+)/g, function(m){ return String(Math.round(parseFloat(m))); }); }
     const t=document.createElement("div");
     t.className="combatText "+type;
-    t.innerText=(type==="heal"?"+":"-")+value;
+    t.innerText=(type==="heal"?"+":"-")+v;
     t.style.left=(x)+"px";
     t.style.top=(y-40)+"px";
     document.body.appendChild(t);
