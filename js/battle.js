@@ -29,6 +29,11 @@ function createDamageEvent(target, damage, source=null, skill=''){
 
 function applyDamage(target,damage,source=null,skill=''){
  if(!target) return;
+ // 训练营稻草人：R大招等走本通道的伤害也累计总伤害
+ if(target.type==='dummy' && typeof window.scarecrowTotalDmg!=='undefined'){
+   window.scarecrowTotalDmg = (window.scarecrowTotalDmg||0) + Math.round(damage);
+   if(target.dmgEl) target.dmgEl.textContent = '总伤害 ' + window.scarecrowTotalDmg;
+ }
  target.hp-=damage;
  if(target.hp<0) target.hp=0;
 
