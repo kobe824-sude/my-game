@@ -75,3 +75,87 @@ window.cloudLogout = cloudLogout;
 // 当前是否已登录云端
 function cloudLoggedIn(){ return !!(window.cloudSession && window.cloudSession.access_token); }
 window.cloudLoggedIn = cloudLoggedIn;
+
+// ===================== V1.0 好友系统（云端） =====================
+function _cloudUid(){ return window.cloudSession && window.cloudSession.user_id; }
+// 搜索玩家（按昵称模糊，排除自己）
+function cloudSearchPlayers(keyword){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  return fetch(URL + '/rest/v1/players?nickname=ilike.*' + encodeURIComponent(keyword) + '*&select=id,nickname,avatar,last_seen&limit=20', { headers: _cloudHeaders() })
+    .then(function(r){ return r.json(); }).then(function(rows){
+      return (Array.isArray(rows)?rows:[]).filter(function(p){ return p && p.id !== uid; });
+    });
+}
+window.cloudSearchPlayers = cloudSearchPlayers;
+// 发送好友申请
+function cloudSendFriendRequest(toPlayerId){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  return fetch(URL + '/rest/v1/friends', {
+    method: 'POST',
+    headers: _cloudHeaders(true),
+    body: JSON.stringify({ user_a: uid, user_b: toPlayerId, status: 'pending' })
+  }).then(function(r){ if(!r.ok) throw new Error('发送失败(可能已申请过或已是好友)'); return true; });
+}
+window.cloudSendFriendRequest = cloudSendFriendRequest;
+// 我的全部好友关系（含对方信息）
+function cloudMyFriends(){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  return fetch(URL + '/rest/v1/friends?or=(user_a.eq.' + uid + ',user_b.eq.' + uid + ')&select=id,user_a,user_b,status,created_at&order=created_at.desc', { headers: _cloudHeaders() })
+    .then(function(r){ return r.json(); }).then(function(rows){
+      rows = Array.isArray(rows)?rows:[];
+      const ids = [];
+      rows.forEach(function(f){ const o = f.user_a === uid ? f.user_b : f.user_a; if(ids.indexOf(o)<0) ids.push(o); });
+      if(!ids.length) return [];
+      return fetch(URL + '/rest/v1/players?id=in.(' + ids.join(',') + ')&select=id,nickname,avatar,last_seen', { headers: _cloudHeaders() })
+        .then(function(pr){ return pr.json(); }).then(function(players){
+          const pmap = {};
+          (Array.isArray(players)?players:[]).forEach(function(p){ if(p) pmap[p.id]=p; });
+          return rows.map(function(f){
+            const oid = f.user_a === uid ? f.user_b : f.user_a;
+            const p = pmap[oid] || { nickname:'?', avatar:'', last_seen:null };
+            return { id: f.id, otherId: oid, nickname: p.nickname, avatar: p.avatar, last_seen: p.last_seen, status: f.status, incoming: (f.user_b === uid) };
+          });
+        });
+    });
+}
+window.cloudMyFriends = cloudMyFriends;
+// 接受/拒绝好友申请（accept=true接受，false拒绝/删除）
+function cloudRespondFriend(friendId, accept){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  if(accept){
+    return fetch(URL + '/rest/v1/friends?id=eq.' + friendId, { method: 'PATCH', headers: _cloudHeaders(true), body: JSON.stringify({ status: 'accepted' }) })
+      .then(function(r){ if(!r.ok) throw new Error('接受失败'); return true; });
+  }
+  return fetch(URL + '/rest/v1/friends?id=eq.' + friendId, { method: 'DELETE', headers: _cloudHeaders() })
+    .then(function(r){ if(!r.ok) throw new Error('操作失败'); return true; });
+}
+window.cloudRespondFriend = cloudRespondFriend;
+// 删除好友
+function cloudRemoveFriend(friendId){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  return fetch(URL + '/rest/v1/friends?id=eq.' + friendId, { method: 'DELETE', headers: _cloudHeaders() })
+    .then(function(r){ if(!r.ok) throw new Error('删除失败'); return true; });
+}
+window.cloudRemoveFriend = cloudRemoveFriend;
+// 在线心跳：每30秒更新一次 last_seen
+function cloudHeartbeat(){
+  const uid = _cloudUid();
+  if(!uid) return;
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  fetch(URL + '/rest/v1/players?id=eq.' + uid, { method: 'PATCH', headers: _cloudHeaders(true), body: JSON.stringify({ last_seen: new Date().toISOString() }) }).catch(function(){});
+}
+window.cloudHeartbeat = cloudHeartbeat;
+// 是否在线（last_seen 90秒内）
+function cloudIsOnline(lastSeen){
+  if(!lastSeen) return false;
+  const t = new Date(lastSeen).getTime();
+  return (Date.now() - t) < 90000;
+}
+window.cloudIsOnline = cloudIsOnline;
+
