@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>视频播放 - 妙脆角猫与刀盾狗</title>
+<meta name="theme-color" content="#2b3a55">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;background:#0e1526;font-family:Arial,"Microsoft YaHei",sans-serif;color:#fff;overflow:hidden;}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+  .pageTitle{font-size:20px;font-weight:bold;color:#ffd86b;margin-bottom:14px;text-align:center;}
+  .videoWrap{width:100%;max-width:900px;background:#000;border:3px solid #ffd86b;border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.6);}
+  video{display:block;width:100%;max-height:78vh;background:#000;}
+  .hint{color:#9fb3cc;font-size:13px;margin-top:12px;text-align:center;line-height:1.6;}
+  .hint a{color:#ffd86b;}
+</style>
+</head>
+<body>
+  <div class="pageTitle">🎬 妙脆角猫与刀盾狗 · 视频</div>
+  <div class="videoWrap">
+    <video id="gameVideo" controls autoplay muted playsinline preload="auto">
+      <source src="./video.mp4" type="video/mp4">
+      你的浏览器不支持视频播放。
+    </video>
+  </div>
+  <div class="hint">▶ 点击播放 / 暂停 · 声音默认静音，点喇叭开启<br>回到游戏：<a href="./index.html">妙脆角猫与刀盾狗</a></div>
+</body>
+</html>
