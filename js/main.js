@@ -478,7 +478,50 @@ function doRegister(){
   showLogin();
   alert('✅ 注册成功！账号「'+name+'」已保存，点「登录」即可进入');
 }
-window.doRegister = doRegister;function restoreRemember(){
+window.doRegister = doRegister;
+// ============ V1.0 云端账号（好友/联机地基） ============
+async function doCloudRegister(){
+  const nameInput = document.getElementById('registerName');
+  const passInput = document.getElementById('registerPass');
+  if(!nameInput || !passInput) return;
+  const name = nameInput.value.trim();
+  const pass = passInput.value;
+  if(!name){ alert('请输入昵称'); return; }
+  if(!pass || pass.length < 6){ alert('密码至少 6 位'); return; }
+  if(typeof window.cloudRegister!=='function'){ alert('云端功能未就绪'); return; }
+  try{ await window.cloudRegister(name, pass); }
+  catch(e){ alert('☁️ 云端注册失败：' + ((e && e.message)||'请重试')); return; }
+  _bindLocalAndEnter(name, pass, '☁️ 云端注册成功！已登录');
+}
+window.doCloudRegister = doCloudRegister;
+async function doCloudLogin(){
+  const nameInput = document.getElementById('loginName');
+  const passInput = document.getElementById('loginPass');
+  if(!nameInput || !passInput) return;
+  const name = nameInput.value.trim();
+  const pass = passInput.value;
+  if(!name){ alert('请输入昵称'); return; }
+  if(!pass){ alert('请输入密码'); return; }
+  if(typeof window.cloudLogin!=='function'){ alert('云端功能未就绪'); return; }
+  try{ await window.cloudLogin(name, pass); }
+  catch(e){ alert('☁️ 云端登录失败：' + ((e && e.message)||'请重试')); return; }
+  _bindLocalAndEnter(name, pass, '☁️ 云端登录成功！');
+}
+window.doCloudLogin = doCloudLogin;
+// 云端身份绑定到本机进度槽：确保本地账号存在后走本地登录流程进入主菜单
+function _bindLocalAndEnter(name, pass, msg){
+  let accounts = [];
+  try{ accounts = JSON.parse(localStorage.getItem('milkfrog_accounts')||'[]'); }catch(e){}
+  const acc = accounts.find(a=>a.name===name);
+  if(acc){ acc.pass = pass; }
+  else if(accounts.length < 10){ accounts.push({ name: name, pass: pass }); }
+  try{ localStorage.setItem('milkfrog_accounts', JSON.stringify(accounts)); }catch(e){}
+  const ln = document.getElementById('loginName'); if(ln) ln.value = name;
+  const lp = document.getElementById('loginPass'); if(lp) lp.value = pass;
+  if(typeof doLogin==='function') doLogin();
+  if(msg) setTimeout(function(){ alert(msg); }, 400);
+}
+function restoreRemember(){
   try{
     const r = JSON.parse(localStorage.getItem('milkfrog_remember')||'null');
     if(r){
