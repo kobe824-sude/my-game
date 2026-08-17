@@ -17,12 +17,32 @@
     var now = Date.now();
     var t = ev.changedTouches && ev.changedTouches[0];
     if(t && now - _lastTapT < 350 && Math.abs(t.clientX - _lastTapX) < 60 && Math.abs(t.clientY - _lastTapY) < 60){
-      ev.preventDefault();
+      // V1.0 未缩放时拦截双击(防放大)；已缩放时放行双击(让浏览器可双击还原，避免卡死在放大状态)
+      var vs = window.visualViewport;
+      var zoomed = vs && vs.scale > 1.01;
+      if(!zoomed){ ev.preventDefault(); }
     }
     if(t){ _lastTapT = now; _lastTapX = t.clientX; _lastTapY = t.clientY; }
   }, {passive:false});
   // dblclick（部分安卓浏览器仍会触发双击缩放）
   document.addEventListener('dblclick', _blockZoom, {passive:false});
+  // V1.0 页面被意外缩放时自动恢复（防止一直卡在放大状态）
+  function tryResetZoom(){
+    try{
+      var vs = window.visualViewport;
+      if(!vs) return;
+      if(vs.scale > 1.01){
+        if(document.documentElement){ document.documentElement.style.zoom = (1 / vs.scale); } // Chromium 补偿抵消浏览器缩放
+        if(typeof reflowGameViewport==='function') reflowGameViewport();
+      } else {
+        if(document.documentElement && document.documentElement.style.zoom){ document.documentElement.style.zoom = ''; }
+      }
+    }catch(e){}
+  }
+  if(window.visualViewport && window.visualViewport.addEventListener){
+    window.visualViewport.addEventListener('resize', function(){ setTimeout(tryResetZoom, 60); });
+  }
+  window.tryResetZoom = tryResetZoom;
   // 多指触摸（捏合）直接阻止默认
   document.addEventListener('touchstart', function(ev){
     if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); }
