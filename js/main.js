@@ -2534,8 +2534,10 @@ window.showNewEnemyPopup = showNewEnemyPopup;
 
 function updateEnemyJump(e){
   if(e.smashAnim) return; // 泰山压顶期间用手动升空动画，不走跳跃物理
-  // 平滑地面高度：走上/走下平台时缓升缓降，不瞬移
-  const targetGy = (typeof groundYAt==='function') ? groundYAt(e.x) : 0;
+  // V1.0 Boss（怒岚）始终站在地面水平线：不会爬上箱子/哨塔，避免看起来站得高、近战打不到
+  const isBoss = (e.type==='boss');
+  // 平滑地面高度：走上/走下平台时缓升缓降，不瞬移（Boss强制地面0）
+  const targetGy = isBoss ? 0 : ((typeof groundYAt==='function') ? groundYAt(e.x) : 0);
   const cur = (e.groundY!==undefined) ? e.groundY : 0;
   if(cur < targetGy - 1){ e.groundY = Math.min(targetGy, cur + 4); }
   else if(cur > targetGy + 1){ e.groundY = Math.max(targetGy, cur - 3); }
@@ -3751,6 +3753,11 @@ window.doClearLeaderboard = doClearLeaderboard;
 // ===================== V10.4 无限模式（波次刷怪，金币/进度保留） =====================
 function enterInfiniteMode(){
   window.infiniteMode = true;
+  // V1.0 无限模式是平坦竞技场：清掉从冒险模式带进来的箱子/哨塔，避免Boss/敌人爬上障碍物
+  if(typeof solidObjects!=='undefined' && Array.isArray(solidObjects)){
+    solidObjects.forEach(s=>{ if(s && s.el && s.el.parentNode) s.el.parentNode.removeChild(s.el); });
+    solidObjects = [];
+  }
   const m = document.getElementById('mainMenu'); if(m) m.style.display='none';
   const g = document.getElementById('game'); if(g) g.style.display='block';
   if(g) g.style.backgroundImage = "url('assets/ui/bg_scene.png')"; // 无限模式也有草原背景，不是绿屏
