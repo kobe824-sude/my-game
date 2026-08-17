@@ -969,6 +969,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
 .rankNum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-weight:bold;background:rgba(255,255,255,.12);}
 /* V10.6 无限模式子菜单 / 排行榜 / 切换角色提醒 */
 #infiniteMenu,#infiniteLeaderboard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:300;}
+#trainingMenu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:300;} /* V1.0 训练营菜单：修复打开后是巨大横条的问题 */
 .infiniteCard{background:rgba(38,22,10,.96);border:4px solid #d9902f;border-radius:22px;padding:34px 52px;text-align:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:Arial,sans-serif;min-width:440px;display:flex;flex-direction:column;align-items:center;}
 .infiniteTitle{font-size:30px;font-weight:bold;margin-bottom:8px;color:#ffd86b;}
 .infiniteSub{font-size:15px;color:#d8b98a;margin-bottom:18px;}
