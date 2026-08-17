@@ -344,6 +344,10 @@ window.DOG = (function(){
     if(!state.tornado || !state.tornado.locked) return; // 没卷到不算伤害
     // 龙卷风贴地：打不到跳到天上的Boss/敌人（泰山压顶滞空、跳太高都躲开）
     if(frog.smashAnim || (frog.jumpY||0) < -80) return;
+    // 训练营稻草人：走统一伤害通道，累计总伤害
+    if(window.trainingMode && frog.type==='dummy'){
+      if(typeof damageEnemy==='function'){ damageEnemy(frog, dmg); return; }
+    }
     frog.hp -= dmg;
     if(frog.hp < 0) frog.hp = 0;
     if(typeof updateFrogHP==='function') updateFrogHP(); // 血条同步
