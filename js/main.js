@@ -1057,7 +1057,7 @@ function setAvatarPreset(kind){
   setAccountAvatar(src);
 }
 window.setAvatarPreset = setAvatarPreset;
-function changeAccountName(){
+async function changeAccountName(){
   const acc = getCurrentAccountObj() || {};
   const renameCount = acc.renameCount || 0;
   const free = renameCount === 0;
@@ -1071,6 +1071,11 @@ function changeAccountName(){
   let accounts = [];
   try{ accounts = JSON.parse(localStorage.getItem('milkfrog_accounts')||'[]'); }catch(e){}
   if(accounts.some(a=>a.name===nn)){ alert('该昵称已被使用，换个名字吧！'); return; }
+  // V1.0 云端改名：如果已登录云端，先同步到云端（检查重名 + 更新云端昵称），失败则不改
+  if(typeof window.cloudLoggedIn==='function' && window.cloudLoggedIn() && typeof window.cloudRenamePlayer==='function'){
+    try{ await window.cloudRenamePlayer(nn); }
+    catch(e){ alert('☁️ 云端改名失败：' + ((e&&e.message)||'请重试')); return; }
+  }
   if(!free) inventory.gold -= cost;
   // 迁移存档（老账号存档自动兼容新名字）：进度/装备/金币原样搬过去，老式无密码存档也一并兼容
   const oldName2 = window.accountName;
