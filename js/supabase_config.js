@@ -218,6 +218,29 @@ function cloudGetUnread(){
     .then(function(r){ return r.json(); }).then(function(rows){ return Array.isArray(rows)?rows:[]; });
 }
 window.cloudGetUnread = cloudGetUnread;
+// V1.0 云端改名：检查新昵称是否被占用 + 更新 players.nickname + 更新会话昵称
+function cloudRenamePlayer(newName){
+  const URL = window.SUPABASE_URL.replace(/\/$/,'');
+  const uid = _cloudUid();
+  if(!uid) return Promise.reject(new Error('请先登录云端'));
+  return fetch(URL + '/rest/v1/players?nickname=eq.' + encodeURIComponent(newName) + '&select=id&limit=1', {
+    headers: { 'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY }
+  }).then(function(r){ return r.json(); }).then(function(rows){
+    const taken = Array.isArray(rows) && rows.length > 0 && rows[0].id !== uid;
+    if(taken) throw new Error('该昵称已被占用，请换一个');
+    return fetch(URL + '/rest/v1/players?id=eq.' + uid, {
+      method: 'PATCH',
+      headers: _cloudHeaders(true),
+      body: JSON.stringify({ nickname: newName })
+    }).then(function(pr){
+      if(!pr.ok) throw new Error('改名失败，请重试');
+      if(window.cloudSession) window.cloudSession.nickname = newName;
+      try{ localStorage.setItem('milkfrog_cloud_session', JSON.stringify(window.cloudSession)); }catch(e){}
+      return true;
+    });
+  });
+}
+window.cloudRenamePlayer = cloudRenamePlayer;
 // 把来自某好友的未读消息标记为已读
 function cloudMarkRead(friendId){
   const URL = window.SUPABASE_URL.replace(/\/$/,'');
